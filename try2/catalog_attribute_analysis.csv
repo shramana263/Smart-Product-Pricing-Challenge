@@ -1,0 +1,32 @@
+attribute,count,type
+Value,75000,individual
+Unit,75000,individual
+Item Name,75000,individual
+Item Name and Value,75000,combination
+Item Name and Unit,75000,combination
+Item Name and Unit and Value,75000,combination
+Unit and Value,75000,combination
+Bullet Point and Value,60723,combination
+Bullet Point,60723,individual
+Bullet Point and Item Name,60723,combination
+Bullet Point and Unit,60723,combination
+Bullet Point and Item Name and Value,60723,combination
+Bullet Point and Item Name and Unit,60723,combination
+Bullet Point and Unit and Value,60723,combination
+Bullet Point and Item Name and Unit and Value,60723,combination
+Product Description,32533,individual
+Item Name and Product Description,32533,combination
+Product Description and Unit,32533,combination
+Product Description and Value,32533,combination
+Item Name and Product Description and Unit and Value,32533,combination
+Product Description and Unit and Value,32533,combination
+Item Name and Product Description and Value,32533,combination
+Item Name and Product Description and Unit,32533,combination
+Bullet Point and Product Description and Value,28284,combination
+Bullet Point and Product Description and Unit,28284,combination
+Bullet Point and Item Name and Product Description,28284,combination
+Bullet Point and Product Description,28284,combination
+Bullet Point and Item Name and Product Description and Unit,28284,combination
+Bullet Point and Item Name and Product Description and Value,28284,combination
+Bullet Point and Product Description and Unit and Value,28284,combination
+Bullet Point and Item Name and Product Description and Unit and Value,28284,combination
