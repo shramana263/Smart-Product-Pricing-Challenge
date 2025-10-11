@@ -1,0 +1,23 @@
+# DistilBERT Fine-Tuning Requirements
+# Amazon ML Hackathon - Smart Product Pricing Challenge
+# Python 3.11
+
+# Core ML libraries
+torch>=2.0.0
+transformers>=4.35.0
+datasets>=2.14.0
+accelerate>=0.24.0
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+scipy>=1.11.0
+
+# Progress & monitoring
+tqdm>=4.66.0
+tensorboard>=2.14.0
+
+# Optional but recommended
+sentencepiece>=0.1.99
+tokenizers>=0.14.0
