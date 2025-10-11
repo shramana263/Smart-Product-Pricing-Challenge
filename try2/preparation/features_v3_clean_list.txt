@@ -1,0 +1,51 @@
+Advanced Features V3 (CLEAN - NO LEAKAGE)
+Total: 47 features
+======================================================================
+
+ 1. ipq
+ 2. title_length
+ 3. title_word_count
+ 4. desc_length
+ 5. desc_word_count
+ 6. has_description
+ 7. capital_ratio
+ 8. number_count
+ 9. multipack_size
+10. has_multipack
+11. weight_value
+12. has_weight
+13. volume_value
+14. has_volume
+15. total_numbers_in_title
+16. total_quantity
+17. log_total_quantity
+18. log_weight
+19. log_volume
+20. brand_frequency
+21. brand_tier
+22. is_popular_brand
+23. brand_name_length
+24. brand_in_title
+25. category_size
+26. is_large_category
+27. brand_category_frequency
+28. quantity_category_ratio
+29. tier_multipack_interaction
+30. brand_tier_quantity
+31. weight_brand_interaction
+32. premium_keyword_count
+33. has_premium_keywords
+34. value_keyword_count
+35. quality_keyword_count
+36. premium_score
+37. value_score
+38. is_travel_size
+39. is_family_size
+40. is_multipack
+41. is_standard_size
+42. special_char_count
+43. has_parentheses
+44. has_ampersand
+45. title_complexity
+46. numeric_density
+47. category_in_title

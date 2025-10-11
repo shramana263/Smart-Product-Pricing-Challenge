@@ -1,0 +1,5 @@
+venv/
+__pycache__/
+*.pyc
+try2/embeddings_data/train_embeddings.csv
+try2/embeddings_data/test_embeddings.csv
