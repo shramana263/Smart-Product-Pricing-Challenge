@@ -423,10 +423,10 @@ def main():
     print("Loading datasets...")
     print("-"*70)
     
-    train1 = pd.read_csv('./dataset/train1.csv')
-    train2 = pd.read_csv('./dataset/train2.csv')
-    test1 = pd.read_csv('./dataset/test1.csv')
-    test2 = pd.read_csv('./dataset/test2.csv')
+    train1 = pd.read_csv('../dataset/train1.csv')
+    train2 = pd.read_csv('../dataset/train2.csv')
+    test1 = pd.read_csv('../dataset/test1.csv')
+    test2 = pd.read_csv('../dataset/test2.csv')
     
     train_df = pd.concat([train1, train2], ignore_index=True)
     test_df = pd.concat([test1, test2], ignore_index=True)
@@ -473,7 +473,7 @@ def main():
     print("Saving features...")
     print("-"*70)
     
-    output_dir = './preparation'
+    output_dir = '../text/preparation'
     os.makedirs(output_dir, exist_ok=True)
     
     train_output = os.path.join(output_dir, 'image_features_train.csv')

@@ -64,7 +64,7 @@ def main():
     print("="*70)
     
     # Paths
-    prep_dir = './preparation'
+    prep_dir = '../text/preparation'
     
     # Text features (V3 Clean - NO LEAKAGE)
     text_train = os.path.join(prep_dir, 'features_v3_clean_train.csv')
