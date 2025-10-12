@@ -13,6 +13,7 @@ Key Improvements:
 import pandas as pd
 import numpy as np
 import re
+from pathlib import Path
 from sklearn.preprocessing import LabelEncoder
 from sklearn.cluster import KMeans
 import warnings
@@ -490,10 +491,14 @@ if __name__ == "__main__":
     
     # Load data
     print("\nLoading data...")
-    train1 = pd.read_csv('./dataset/train1.csv')
-    train2 = pd.read_csv('./dataset/train2.csv')
-    test1 = pd.read_csv('./dataset/test1.csv')
-    test2 = pd.read_csv('./dataset/test2.csv')
+    base_dir = Path(__file__).resolve().parent
+    dataset_dir = base_dir.parent / 'dataset'
+    prep_dir = base_dir / 'preparation'
+
+    train1 = pd.read_csv(dataset_dir / 'train1.csv')
+    train2 = pd.read_csv(dataset_dir / 'train2.csv')
+    test1 = pd.read_csv(dataset_dir / 'test1.csv')
+    test2 = pd.read_csv(dataset_dir / 'test2.csv')
     
     train_df = pd.concat([train1, train2], ignore_index=True)
     test_df = pd.concat([test1, test2], ignore_index=True)
@@ -508,16 +513,16 @@ if __name__ == "__main__":
     
     # Train features
     train_output = train_features[feature_cols + ['sample_id', 'price']].copy()
-    train_output.to_csv('./preparation/features_v2_train.csv', index=False)
+    train_output.to_csv(prep_dir / 'features_v2_train.csv', index=False)
     print(f"✓ Train features saved: features_v2_train.csv")
     
     # Test features  
     test_output = test_features[feature_cols + ['sample_id']].copy()
-    test_output.to_csv('./preparation/features_v2_test.csv', index=False)
+    test_output.to_csv(prep_dir / 'features_v2_test.csv', index=False)
     print(f"✓ Test features saved: features_v2_test.csv")
     
     # Feature list
-    with open('./preparation/features_v2_list.txt', 'w') as f:
+    with open(prep_dir / 'features_v2_list.txt', 'w') as f:
         for col in feature_cols:
             f.write(f"{col}\n")
     print(f"✓ Feature list saved: features_v2_list.txt")

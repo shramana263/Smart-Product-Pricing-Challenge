@@ -10,6 +10,7 @@ Date: October 12, 2025
 """
 
 import os
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import torch
@@ -35,9 +36,9 @@ print("="*80)
 
 class Config:
     # Paths
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DATASET_DIR = os.path.join(BASE_DIR, 'dataset')
-    OUTPUT_DIR = os.path.join(BASE_DIR, 'modeling', 'distilbert_simple')
+    BASE_DIR = Path(__file__).resolve().parent
+    DATASET_DIR = BASE_DIR.parent / 'dataset'
+    OUTPUT_DIR = BASE_DIR.parent / 'modeling' / 'distilbert_simple'
     
     # Model
     MODEL_NAME = 'distilbert-base-uncased'
@@ -111,15 +112,15 @@ def load_and_prepare_data():
     print("\n📂 Loading datasets...")
     
     # Load training data
-    train1 = pd.read_csv(os.path.join(config.DATASET_DIR, 'train1.csv'))
-    train2 = pd.read_csv(os.path.join(config.DATASET_DIR, 'train2.csv'))
+    train1 = pd.read_csv(config.DATASET_DIR / 'train1.csv')
+    train2 = pd.read_csv(config.DATASET_DIR / 'train2.csv')
     train_df = pd.concat([train1, train2], ignore_index=True)
     
     print(f"✓ Training samples: {len(train_df):,}")
     
     # Load test data
-    test1 = pd.read_csv(os.path.join(config.DATASET_DIR, 'test1.csv'))
-    test2 = pd.read_csv(os.path.join(config.DATASET_DIR, 'test2.csv'))
+    test1 = pd.read_csv(config.DATASET_DIR / 'test1.csv')
+    test2 = pd.read_csv(config.DATASET_DIR / 'test2.csv')
     test_df = pd.concat([test1, test2], ignore_index=True)
     
     print(f"✓ Test samples:     {len(test_df):,}")
@@ -194,15 +195,16 @@ def train_model(train_df, val_df):
     print(f"✓ Model parameters: {sum(p.numel() for p in model.parameters()):,}")
     
     # Training arguments
+    config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     training_args = TrainingArguments(
-        output_dir=config.OUTPUT_DIR,
+    output_dir=str(config.OUTPUT_DIR),
         num_train_epochs=config.NUM_EPOCHS,
         per_device_train_batch_size=config.BATCH_SIZE,
         per_device_eval_batch_size=config.BATCH_SIZE * 2,
         learning_rate=config.LEARNING_RATE,
         warmup_ratio=config.WARMUP_RATIO,
         weight_decay=config.WEIGHT_DECAY,
-        logging_dir=os.path.join(config.OUTPUT_DIR, 'logs'),
+    logging_dir=str(config.OUTPUT_DIR / 'logs'),
         logging_steps=50,
         eval_strategy='steps',
         eval_steps=200,
@@ -316,7 +318,9 @@ def generate_predictions(model, tokenizer, test_df):
         'price': y_pred
     })
     
-    output_path = os.path.join(config.BASE_DIR, 'modeling', 'test_out_distilbert_simple.csv')
+    modeling_dir = config.BASE_DIR.parent / 'modeling'
+    modeling_dir.mkdir(parents=True, exist_ok=True)
+    output_path = modeling_dir / 'test_out_distilbert_simple.csv'
     submission.to_csv(output_path, index=False)
     
     print(f"✓ Predictions saved: {output_path}")
@@ -350,8 +354,8 @@ def main():
     
     # Save model
     print("\n💾 Saving model...")
-    model_path = os.path.join(config.OUTPUT_DIR, 'final_model')
-    os.makedirs(model_path, exist_ok=True)
+    model_path = config.OUTPUT_DIR / 'final_model'
+    model_path.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(model_path)
     tokenizer.save_pretrained(model_path)
     print(f"✓ Model saved: {model_path}")

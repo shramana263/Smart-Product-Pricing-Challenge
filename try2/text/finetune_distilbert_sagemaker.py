@@ -18,6 +18,7 @@ Date: October 12, 2025
 import os
 import sys
 import json
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import torch
@@ -44,10 +45,10 @@ print("="*80)
 
 class Config:
     # Paths
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DATASET_DIR = os.path.join(BASE_DIR, 'dataset')
-    OUTPUT_DIR = os.path.join(BASE_DIR, 'modeling', 'distilbert_sagemaker')
-    CHECKPOINT_DIR = os.path.join(OUTPUT_DIR, 'checkpoints')
+    BASE_DIR = Path(__file__).resolve().parent
+    DATASET_DIR = BASE_DIR.parent / 'dataset'
+    OUTPUT_DIR = BASE_DIR.parent / 'modeling' / 'distilbert_sagemaker'
+    CHECKPOINT_DIR = OUTPUT_DIR / 'checkpoints'
     
     # Model
     MODEL_NAME = 'distilbert-base-uncased'
@@ -163,15 +164,15 @@ def load_and_prepare_data():
     print("\n📂 Loading datasets...")
     
     # Load training data
-    train1 = pd.read_csv(os.path.join(config.DATASET_DIR, 'train1.csv'))
-    train2 = pd.read_csv(os.path.join(config.DATASET_DIR, 'train2.csv'))
+    train1 = pd.read_csv(config.DATASET_DIR / 'train1.csv')
+    train2 = pd.read_csv(config.DATASET_DIR / 'train2.csv')
     train_df = pd.concat([train1, train2], ignore_index=True)
     
     print(f"✓ Training samples: {len(train_df):,}")
     
     # Load test data
-    test1 = pd.read_csv(os.path.join(config.DATASET_DIR, 'test1.csv'))
-    test2 = pd.read_csv(os.path.join(config.DATASET_DIR, 'test2.csv'))
+    test1 = pd.read_csv(config.DATASET_DIR / 'test1.csv')
+    test2 = pd.read_csv(config.DATASET_DIR / 'test2.csv')
     test_df = pd.concat([test1, test2], ignore_index=True)
     
     print(f"✓ Test samples:     {len(test_df):,}")
@@ -259,8 +260,8 @@ def train_model(train_df, val_df):
     # SageMaker-optimized training arguments
     training_args = TrainingArguments(
         # Output & Logging
-        output_dir=config.OUTPUT_DIR,
-        logging_dir=os.path.join(config.OUTPUT_DIR, 'logs'),
+    output_dir=str(config.OUTPUT_DIR),
+    logging_dir=str(config.OUTPUT_DIR / 'logs'),
         logging_steps=config.LOGGING_STEPS,
         logging_first_step=True,
         
@@ -333,11 +334,11 @@ def train_model(train_df, val_df):
     
     # Check for existing checkpoint to resume
     checkpoint = None
-    if os.path.exists(config.CHECKPOINT_DIR):
-        checkpoints = [d for d in os.listdir(config.CHECKPOINT_DIR) if d.startswith('checkpoint-')]
+    if config.CHECKPOINT_DIR.exists():
+        checkpoints = [d for d in config.CHECKPOINT_DIR.iterdir() if d.name.startswith('checkpoint-') and d.is_dir()]
         if checkpoints:
-            latest_checkpoint = max(checkpoints, key=lambda x: int(x.split('-')[1]))
-            checkpoint = os.path.join(config.CHECKPOINT_DIR, latest_checkpoint)
+            latest_checkpoint = max(checkpoints, key=lambda x: int(x.name.split('-')[1]))
+            checkpoint = str(latest_checkpoint)
             print(f"\n🔄 Resuming from checkpoint: {checkpoint}")
     
     print("\n🚀 Starting training...")
@@ -374,7 +375,7 @@ def evaluate(model, tokenizer, test_df):
     trainer = Trainer(
         model=model,
         args=TrainingArguments(
-            output_dir=config.OUTPUT_DIR,
+            output_dir=str(config.OUTPUT_DIR),
             per_device_eval_batch_size=config.BATCH_SIZE * 2,
             dataloader_num_workers=config.DATALOADER_NUM_WORKERS,
             dataloader_pin_memory=config.DATALOADER_PIN_MEMORY,
@@ -459,7 +460,9 @@ def generate_predictions(model, tokenizer, test_df):
         'price': y_pred
     })
     
-    output_path = os.path.join(config.BASE_DIR, 'modeling', 'test_out_distilbert_sagemaker.csv')
+    modeling_dir = config.BASE_DIR.parent / 'modeling'
+    modeling_dir.mkdir(parents=True, exist_ok=True)
+    output_path = modeling_dir / 'test_out_distilbert_sagemaker.csv'
     submission.to_csv(output_path, index=False)
     
     print(f"✓ Predictions saved: {output_path}")
@@ -497,7 +500,7 @@ def save_results(smape, training_history):
         }
     }
     
-    results_path = os.path.join(config.OUTPUT_DIR, 'training_results.json')
+    results_path = config.OUTPUT_DIR / 'training_results.json'
     with open(results_path, 'w') as f:
         json.dump(results, f, indent=2)
     
@@ -515,8 +518,8 @@ def main():
     print("="*80)
     
     # Create output directories
-    os.makedirs(config.OUTPUT_DIR, exist_ok=True)
-    os.makedirs(config.CHECKPOINT_DIR, exist_ok=True)
+    config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    config.CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
     
     # Load data
     train_df, val_df, test_df, final_test_df = load_and_prepare_data()
@@ -536,8 +539,8 @@ def main():
     
     # Save model
     print("\n💾 Saving model...")
-    model_path = os.path.join(config.OUTPUT_DIR, 'final_model')
-    os.makedirs(model_path, exist_ok=True)
+    model_path = config.OUTPUT_DIR / 'final_model'
+    model_path.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(model_path)
     tokenizer.save_pretrained(model_path)
     print(f"✓ Model saved: {model_path}")
@@ -558,12 +561,12 @@ def main():
     
     print("\n📁 Output files:")
     print(f"  - Model: {model_path}")
-    print(f"  - Predictions: {os.path.join(config.BASE_DIR, 'modeling', 'test_out_distilbert_sagemaker.csv')}")
-    print(f"  - Results: {os.path.join(config.OUTPUT_DIR, 'training_results.json')}")
-    print(f"  - TensorBoard logs: {os.path.join(config.OUTPUT_DIR, 'logs')}")
+    print(f"  - Predictions: {config.BASE_DIR.parent / 'modeling' / 'test_out_distilbert_sagemaker.csv'}")
+    print(f"  - Results: {config.OUTPUT_DIR / 'training_results.json'}")
+    print(f"  - TensorBoard logs: {config.OUTPUT_DIR / 'logs'}")
     
     print("\n💡 To view training logs, run:")
-    print(f"   tensorboard --logdir {os.path.join(config.OUTPUT_DIR, 'logs')}")
+    print(f"   tensorboard --logdir {config.OUTPUT_DIR / 'logs'}")
     
     print("\n" + "="*80)
 

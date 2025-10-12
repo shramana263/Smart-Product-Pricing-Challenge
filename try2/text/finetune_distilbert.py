@@ -10,6 +10,7 @@ Date: October 12, 2025
 """
 
 import os
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import torch
@@ -37,9 +38,9 @@ print("="*80)
 
 class Config:
     # Paths
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DATASET_DIR = os.path.join(BASE_DIR, 'dataset')
-    OUTPUT_DIR = os.path.join(BASE_DIR, 'modeling', 'distilbert_model')
+    BASE_DIR = Path(__file__).resolve().parent
+    DATASET_DIR = BASE_DIR.parent / 'dataset'
+    OUTPUT_DIR = BASE_DIR.parent / 'modeling' / 'distilbert_model'
     
     # Data files
     TRAIN_FILES = ['train1.csv', 'train2.csv']
@@ -178,7 +179,7 @@ def load_data():
     # Load training data
     train_dfs = []
     for file in config.TRAIN_FILES:
-        path = os.path.join(config.DATASET_DIR, file)
+        path = config.DATASET_DIR / file
         df = pd.read_csv(path)
         train_dfs.append(df)
         print(f"✓ Loaded {file}: {len(df):,} samples")
@@ -189,7 +190,7 @@ def load_data():
     # Load test data
     test_dfs = []
     for file in config.TEST_FILES:
-        path = os.path.join(config.DATASET_DIR, file)
+        path = config.DATASET_DIR / file
         df = pd.read_csv(path)
         test_dfs.append(df)
         print(f"✓ Loaded {file}: {len(df):,} samples")
@@ -282,14 +283,14 @@ def train_model(train_dataset, val_dataset):
     
     # Training arguments
     training_args = TrainingArguments(
-        output_dir=config.OUTPUT_DIR,
+        output_dir=str(config.OUTPUT_DIR),
         num_train_epochs=config.NUM_EPOCHS,
         per_device_train_batch_size=config.BATCH_SIZE,
         per_device_eval_batch_size=config.BATCH_SIZE,
         warmup_steps=config.WARMUP_STEPS,
         weight_decay=config.WEIGHT_DECAY,
         learning_rate=config.LEARNING_RATE,
-        logging_dir=os.path.join(config.OUTPUT_DIR, 'logs'),
+        logging_dir=str(config.OUTPUT_DIR / 'logs'),
         logging_steps=100,
         evaluation_strategy='steps',
         eval_steps=500,
@@ -447,7 +448,9 @@ def generate_test_predictions(model, tokenizer, test_df):
     })
     
     # Save predictions
-    output_path = os.path.join(config.BASE_DIR, 'modeling', 'test_out_distilbert.csv')
+    output_dir = config.BASE_DIR.parent / 'modeling'
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / 'test_out_distilbert.csv'
     submission_df.to_csv(output_path, index=False)
     
     print(f"✓ Predictions saved to: {output_path}")
@@ -502,6 +505,7 @@ def main():
     print(f"✓ Val dataset:   {len(val_dataset):,} samples")
     
     # 6. Train model
+    config.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     model, tokenizer = train_model(train_dataset, val_dataset)
     
     # 7. Evaluate on test split
@@ -512,7 +516,8 @@ def main():
     
     # 9. Save model
     print("\n💾 Saving model...")
-    model_path = os.path.join(config.OUTPUT_DIR, 'final_model')
+    model_path = config.OUTPUT_DIR / 'final_model'
+    model_path.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(model_path)
     tokenizer.save_pretrained(model_path)
     print(f"✓ Model saved to: {model_path}")

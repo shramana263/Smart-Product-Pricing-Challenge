@@ -17,6 +17,7 @@ Key Improvements:
 import pandas as pd
 import numpy as np
 import re
+from pathlib import Path
 from sklearn.preprocessing import LabelEncoder
 from sklearn.cluster import KMeans
 import warnings
@@ -511,10 +512,14 @@ if __name__ == '__main__':
     
     # Load data
     print("\nLoading data...")
-    train1 = pd.read_csv('./dataset/train1.csv')
-    train2 = pd.read_csv('./dataset/train2.csv')
-    test1 = pd.read_csv('./dataset/test1.csv')
-    test2 = pd.read_csv('./dataset/test2.csv')
+    base_dir = Path(__file__).resolve().parent
+    dataset_dir = base_dir.parent / 'dataset'
+    prep_dir = base_dir / 'preparation'
+
+    train1 = pd.read_csv(dataset_dir / 'train1.csv')
+    train2 = pd.read_csv(dataset_dir / 'train2.csv')
+    test1 = pd.read_csv(dataset_dir / 'test1.csv')
+    test2 = pd.read_csv(dataset_dir / 'test2.csv')
     
     train_df = pd.concat([train1, train2], ignore_index=True)
     test_df = pd.concat([test1, test2], ignore_index=True)
@@ -526,8 +531,8 @@ if __name__ == '__main__':
     train_features, test_features = create_final_features_clean(train_df, test_df)
     
     # Save features
-    train_path = './preparation/features_v3_clean_train.csv'
-    test_path = './preparation/features_v3_clean_test.csv'
+    train_path = prep_dir / 'features_v3_clean_train.csv'
+    test_path = prep_dir / 'features_v3_clean_test.csv'
     
     train_features.to_csv(train_path, index=False)
     test_features.to_csv(test_path, index=False)
@@ -552,7 +557,7 @@ if __name__ == '__main__':
         print(f"{i:2d}. {feat}")
     
     # Save feature list
-    with open('./preparation/features_v3_clean_list.txt', 'w') as f:
+    with open(prep_dir / 'features_v3_clean_list.txt', 'w') as f:
         f.write(f"Advanced Features V3 (CLEAN - NO LEAKAGE)\n")
         f.write(f"Total: {len(feature_list)} features\n")
         f.write("="*70 + "\n\n")

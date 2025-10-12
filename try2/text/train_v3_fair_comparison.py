@@ -6,6 +6,7 @@ Goal: Compare fairly with 47.52% baseline
 
 import pandas as pd
 import numpy as np
+from pathlib import Path
 import lightgbm as lgb
 import xgboost as xgb
 from catboost import CatBoostRegressor
@@ -27,8 +28,12 @@ print("="*70)
 
 # Load features
 print("\nLoading features...")
-train_df = pd.read_csv('./preparation/features_v3_clean_train.csv')
-test_df = pd.read_csv('./preparation/features_v3_clean_test.csv')
+base_dir = Path(__file__).resolve().parent
+prep_dir = base_dir / 'preparation'
+model_dir = base_dir.parent / 'modeling'
+
+train_df = pd.read_csv(prep_dir / 'features_v3_clean_train.csv')
+test_df = pd.read_csv(prep_dir / 'features_v3_clean_test.csv')
 
 print(f"✓ Train shape: {train_df.shape}")
 print(f"✓ Test shape: {test_df.shape}")
@@ -244,7 +249,8 @@ submission = pd.DataFrame({
     'price': predictions
 })
 
-output_path = './modeling/test_out_v3_fair.csv'
+model_dir.mkdir(parents=True, exist_ok=True)
+output_path = model_dir / 'test_out_v3_fair.csv'
 submission.to_csv(output_path, index=False)
 
 print(f"\n✓ Predictions saved: {output_path}")
@@ -287,7 +293,7 @@ else:
 print("\n", feature_importance.head(20).to_string(index=False))
 
 # Save feature importance
-feature_importance.to_csv('./modeling/feature_importance_v3_fair.csv', index=False)
+feature_importance.to_csv(model_dir / 'feature_importance_v3_fair.csv', index=False)
 print(f"\n✓ Feature importance saved: feature_importance_v3_fair.csv")
 
 print("\n" + "="*70)
