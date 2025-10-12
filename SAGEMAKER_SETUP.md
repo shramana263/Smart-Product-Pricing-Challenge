@@ -35,14 +35,15 @@
 conda create -n distilbert python=3.10 -y
 conda activate distilbert
 
-# Install PyTorch with CUDA support
-conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia -y
+# ⚠️ IMPORTANT: Install PyTorch with CUDA support (NOT from conda-forge!)
+# Use pip to ensure GPU version
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 # Install other dependencies
 pip install -r requirements_sagemaker.txt
 
 # Verify GPU access
-python -c "import torch; print(f'CUDA Available: {torch.cuda.is_available()}'); print(f'GPU: {torch.cuda.get_device_name(0)}')"
+python -c "import torch; print(f'CUDA Available: {torch.cuda.is_available()}'); print(f'GPU Count: {torch.cuda.device_count()}'); print(f'GPU Name: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"No GPU\"}')"
 ```
 
 ### Step 3: Upload Your Data
@@ -210,6 +211,28 @@ SageMaker Code Editor doesn't support spot, but for training jobs:
 ---
 
 ## 🐛 Troubleshooting
+
+### Issue: "CUDA Available: False" / "Torch not compiled with CUDA enabled"
+**Cause:** You installed the CPU-only version of PyTorch
+
+**Solution:**
+```bash
+# Fix it by reinstalling GPU version
+cd try2
+chmod +x fix_pytorch_gpu.sh
+./fix_pytorch_gpu.sh
+
+# Or manually:
+pip uninstall torch torchvision torchaudio -y
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# Verify
+python -c "import torch; print(torch.cuda.is_available())"
+```
+
+**Note:** If still not working, check:
+- Your instance type MUST have GPU (ml.g4dn.*, ml.g5.*, etc.)
+- Run `nvidia-smi` to verify GPU hardware is present
 
 ### Issue: "CUDA out of memory"
 **Solution:**
