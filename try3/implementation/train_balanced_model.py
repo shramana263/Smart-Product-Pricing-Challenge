@@ -187,7 +187,7 @@ for feat in categorical_features:
     safe_features.append(f'{feat}_freq')
 
 X_train = train_df[safe_features].copy()
-y_train = train_df['PRICE'].values
+y_train = train_df['price'].values  # Lowercase
 X_test = test_df[safe_features].copy()
 
 # Log transform (helps with skewed distribution)
@@ -310,15 +310,13 @@ print("STEP 8: SAVING PREDICTIONS")
 print("="*80)
 
 # Version 1: Raw predictions
-submission_raw = test_df[['ITEM_ID']].copy()
-submission_raw.columns = ['sample_id']
+submission_raw = test_df[['sample_id']].copy()  # Already has correct column name
 submission_raw['price'] = test_predictions
 submission_raw.to_csv(CONFIG['output_dir'] / 'submission_raw.csv', index=False)
 print(f"✓ Saved raw: {CONFIG['output_dir'] / 'submission_raw.csv'}")
 
 # Version 2: Scaled predictions (RECOMMENDED)
-submission_scaled = test_df[['ITEM_ID']].copy()
-submission_scaled.columns = ['sample_id']
+submission_scaled = test_df[['sample_id']].copy()  # Already has correct column name
 submission_scaled['price'] = test_predictions_scaled
 submission_scaled.to_csv(CONFIG['output_dir'] / 'submission.csv', index=False)
 print(f"✓ Saved scaled: {CONFIG['output_dir'] / 'submission.csv'} ⭐")
