@@ -86,6 +86,14 @@ print("="*80)
 train_df = pd.read_csv(CONFIG['advanced_features_dir'] / 'train_with_advanced_features.csv')
 test_df = pd.read_csv(CONFIG['advanced_features_dir'] / 'test_with_advanced_features.csv')
 
+# Normalize column names
+train_df.columns = train_df.columns.str.upper()
+test_df.columns = test_df.columns.str.upper()
+
+# Rename specific columns to match expected names
+train_df = train_df.rename(columns={'CATALOG_CONTENT': 'ITEM_NAME', 'SAMPLE_ID': 'ITEM_ID'})
+test_df = test_df.rename(columns={'CATALOG_CONTENT': 'ITEM_NAME', 'SAMPLE_ID': 'ITEM_ID'})
+
 print(f"✓ Loaded {len(train_df):,} training samples")
 print(f"✓ Loaded {len(test_df):,} test samples")
 print(f"✓ Features: {train_df.shape[1]}")
@@ -111,23 +119,23 @@ print("="*80)
 # Numeric features from Phase 1.2 & 1.3
 numeric_features = [
     # Unit features
-    'qty', 'total_qty', 'multiplier', 'price_per_unit',
+    'QTY', 'TOTAL_QTY', 'MULTIPLIER', 'PRICE_PER_UNIT',
     # Premium/Budget
-    'premium_count', 'budget_count', 'premium_material_count', 
-    'budget_material_count', 'premium_signal',
+    'PREMIUM_COUNT', 'BUDGET_COUNT', 'PREMIUM_MATERIAL', 
+    'BUDGET_MATERIAL', 'PREMIUM_SIGNAL',
     # Text complexity
-    'text_char_count', 'text_word_count', 'text_avg_word_length',
-    'text_unique_word_ratio', 'text_digit_ratio', 'text_upper_ratio',
-    'text_special_char_ratio', 'text_bullet_count',
+    'TEXT_CHAR_COUNT', 'TEXT_WORD_COUNT', 'TEXT_AVG_WORD_LENGTH',
+    'TEXT_UNIQUE_WORD_RATIO', 'TEXT_DIGIT_RATIO', 'TEXT_CAPITAL_RATIO',
+    'TEXT_SPECIAL_CHAR_RATIO', 'TEXT_SENTENCE_COUNT',
     # Interactions
-    'price_per_char', 'qty_premium_interaction',
+    'PRICE_PER_CHAR', 'QTY_PREMIUM_INTERACTION', 'IS_BULK',
 ]
 
 # Categorical features
 categorical_features = [
-    'unit', 'multiplier_bin', 'unit_category',
-    'brand_tier', 'category',
-    'unit_premium', 'brand_category', 'bulk_unit'
+    'UNIT', 'MULTIPLIER_BIN', 'UNIT_CATEGORY',
+    'BRAND_TIER', 'CATEGORY',
+    'UNIT_PREMIUM', 'BRAND_CATEGORY', 'BULK_UNIT', 'BRAND'
 ]
 
 # Target
@@ -144,11 +152,21 @@ print()
 # Handle missing values
 for feat in numeric_features:
     train_df[feat] = train_df[feat].fillna(0)
-    test_df[feat] = test_df[feat].fillna(0)
+    if feat in test_df.columns:  # Only fill if feature exists in test
+        test_df[feat] = test_df[feat].fillna(0)
 
 for feat in categorical_features:
     train_df[feat] = train_df[feat].fillna('unknown').astype(str)
-    test_df[feat] = test_df[feat].fillna('unknown').astype(str)
+    if feat in test_df.columns:  # Only fill if feature exists in test
+        test_df[feat] = test_df[feat].fillna('unknown').astype(str)
+
+# Filter features to only those present in BOTH train and test
+numeric_features = [f for f in numeric_features if f in test_df.columns]
+categorical_features = [f for f in categorical_features if f in test_df.columns]
+
+print(f"✓ Final numeric features: {len(numeric_features)}")
+print(f"✓ Final categorical features: {len(categorical_features)}")
+print()
 
 # ============================================================================
 # STEP 4: CREATE EMBEDDINGS (OPTIONAL)
@@ -157,60 +175,82 @@ print("="*80)
 print("STEP 4: CREATING TEXT EMBEDDINGS")
 print("="*80)
 
+# Check if embeddings already exist
+embeddings_dir = CONFIG['output_dir'] / 'embeddings_cache'
+embeddings_dir.mkdir(parents=True, exist_ok=True)
+train_emb_path = embeddings_dir / 'train_embeddings.npy'
+test_emb_path = embeddings_dir / 'test_embeddings.npy'
+
 if CONFIG['use_distilbert']:
-    print("🚀 Using DistilBERT for text embeddings...")
-    print(f"⏱️  This will take ~30-45 minutes on T4 GPU")
-    print()
-    
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"✓ Device: {device}")
-    
-    tokenizer = DistilBertTokenizer.from_pretrained(CONFIG['model_name'])
-    model = DistilBertModel.from_pretrained(CONFIG['model_name']).to(device)
-    model.eval()
-    
-    def get_embeddings(texts, batch_size=32):
-        """Get DistilBERT embeddings for texts"""
-        embeddings = []
+    # Try to load existing embeddings
+    if train_emb_path.exists() and test_emb_path.exists():
+        print("� Loading cached embeddings...")
+        train_embeddings = np.load(train_emb_path)
+        test_embeddings = np.load(test_emb_path)
+        print(f"✓ Loaded train embeddings: {train_embeddings.shape}")
+        print(f"✓ Loaded test embeddings: {test_embeddings.shape}")
+        print()
+    else:
+        print("🚀 Creating DistilBERT embeddings...")
+        print(f"⏱️  This will take ~30-45 minutes on T4 GPU")
+        print()
         
-        for i in range(0, len(texts), batch_size):
-            batch_texts = texts[i:i+batch_size]
-            
-            # Tokenize
-            encoded = tokenizer(
-                batch_texts,
-                padding=True,
-                truncation=True,
-                max_length=CONFIG['max_length'],
-                return_tensors='pt'
-            )
-            
-            # Move to device
-            input_ids = encoded['input_ids'].to(device)
-            attention_mask = encoded['attention_mask'].to(device)
-            
-            # Get embeddings
-            with torch.no_grad():
-                outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-                # Use [CLS] token embedding
-                batch_embeddings = outputs.last_hidden_state[:, 0, :].cpu().numpy()
-            
-            embeddings.append(batch_embeddings)
-            
-            if (i // batch_size) % 100 == 0:
-                print(f"  Processed {i}/{len(texts)} texts...")
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print(f"✓ Device: {device}")
         
-        return np.vstack(embeddings)
-    
-    # Create embeddings
-    print("🔄 Creating train embeddings...")
-    train_embeddings = get_embeddings(train_df['ITEM_NAME'].tolist(), CONFIG['batch_size'])
-    print(f"✓ Train embeddings shape: {train_embeddings.shape}")
-    
-    print("🔄 Creating test embeddings...")
-    test_embeddings = get_embeddings(test_df['ITEM_NAME'].tolist(), CONFIG['batch_size'])
-    print(f"✓ Test embeddings shape: {test_embeddings.shape}")
-    print()
+        tokenizer = DistilBertTokenizer.from_pretrained(CONFIG['model_name'])
+        model = DistilBertModel.from_pretrained(CONFIG['model_name']).to(device)
+        model.eval()
+        
+        def get_embeddings(texts, batch_size=32):
+            """Get DistilBERT embeddings for texts"""
+            embeddings = []
+            
+            for i in range(0, len(texts), batch_size):
+                batch_texts = texts[i:i+batch_size]
+                
+                # Tokenize
+                encoded = tokenizer(
+                    batch_texts,
+                    padding=True,
+                    truncation=True,
+                    max_length=CONFIG['max_length'],
+                    return_tensors='pt'
+                )
+                
+                # Move to device
+                input_ids = encoded['input_ids'].to(device)
+                attention_mask = encoded['attention_mask'].to(device)
+                
+                # Get embeddings
+                with torch.no_grad():
+                    outputs = model(input_ids=input_ids, attention_mask=attention_mask)
+                    # Use [CLS] token embedding
+                    batch_embeddings = outputs.last_hidden_state[:, 0, :].cpu().numpy()
+                
+                embeddings.append(batch_embeddings)
+                
+                if (i // batch_size) % 100 == 0:
+                    print(f"  Processed {i}/{len(texts)} texts...")
+            
+            return np.vstack(embeddings)
+        
+        # Create embeddings
+        print("🔄 Creating train embeddings...")
+        train_embeddings = get_embeddings(train_df['ITEM_NAME'].tolist(), CONFIG['batch_size'])
+        print(f"✓ Train embeddings shape: {train_embeddings.shape}")
+        
+        print("🔄 Creating test embeddings...")
+        test_embeddings = get_embeddings(test_df['ITEM_NAME'].tolist(), CONFIG['batch_size'])
+        print(f"✓ Test embeddings shape: {test_embeddings.shape}")
+        print()
+        
+        # Save embeddings for future use
+        print("💾 Saving embeddings to cache...")
+        np.save(train_emb_path, train_embeddings)
+        np.save(test_emb_path, test_embeddings)
+        print(f"✓ Saved to {embeddings_dir}")
+        print()
     
     # Add embeddings as features
     for i in range(train_embeddings.shape[1]):
@@ -241,6 +281,14 @@ X_train = train_df[numeric_features + categorical_features].copy()
 y_train = train_df[target_col].values
 X_test = test_df[numeric_features + categorical_features].copy()
 
+# Convert categorical features to 'category' dtype for LightGBM
+print("🔄 Encoding categorical features...")
+for feat in categorical_features:
+    X_train[feat] = X_train[feat].astype('category')
+    X_test[feat] = X_test[feat].astype('category')
+print(f"✓ Encoded {len(categorical_features)} categorical features")
+print()
+
 # Create stratified folds
 train_df['price_bin'] = pd.qcut(y_train, q=10, labels=False, duplicates='drop')
 skf = StratifiedKFold(n_splits=CONFIG['n_folds'], shuffle=True, random_state=CONFIG['random_seed'])
@@ -255,23 +303,37 @@ oof_predictions = np.zeros(len(train_df))
 test_predictions = np.zeros(len(test_df))
 fold_scores = []
 
+# Check for existing fold predictions
+fold_cache_dir = CONFIG['output_dir'] / 'fold_cache'
+fold_cache_dir.mkdir(parents=True, exist_ok=True)
+
 for fold, (train_idx, val_idx) in enumerate(skf.split(X_train, train_df['price_bin']), 1):
-    print(f"📊 Fold {fold}/{CONFIG['n_folds']}")
+    fold_oof_path = fold_cache_dir / f'fold_{fold}_oof.npy'
+    fold_test_path = fold_cache_dir / f'fold_{fold}_test.npy'
+    fold_score_path = fold_cache_dir / f'fold_{fold}_score.txt'
+    
+    # Check if this fold was already trained
+    if fold_oof_path.exists() and fold_test_path.exists() and fold_score_path.exists():
+        print(f"� Fold {fold}/{CONFIG['n_folds']} - Loading cached predictions")
+        oof_predictions[val_idx] = np.load(fold_oof_path)
+        fold_test_pred = np.load(fold_test_path)
+        test_predictions += fold_test_pred / CONFIG['n_folds']
+        with open(fold_score_path, 'r') as f:
+            fold_smape = float(f.read().strip())
+        fold_scores.append(fold_smape)
+        print(f"   Fold {fold} SMAPE: {fold_smape:.3f}% (cached)")
+        print()
+        continue
+    
+    print(f"�📊 Fold {fold}/{CONFIG['n_folds']} - Training")
     
     # Split data
     X_tr, X_val = X_train.iloc[train_idx], X_train.iloc[val_idx]
     y_tr, y_val = y_train[train_idx], y_train[val_idx]
     
-    # Create datasets
-    train_data = lgb.Dataset(
-        X_tr, y_tr,
-        categorical_feature=categorical_features
-    )
-    val_data = lgb.Dataset(
-        X_val, y_val,
-        categorical_feature=categorical_features,
-        reference=train_data
-    )
+    # Create datasets (LightGBM will auto-detect category dtype)
+    train_data = lgb.Dataset(X_tr, y_tr)
+    val_data = lgb.Dataset(X_val, y_val, reference=train_data)
     
     # Train
     model = lgb.train(
@@ -287,13 +349,24 @@ for fold, (train_idx, val_idx) in enumerate(skf.split(X_train, train_df['price_b
     )
     
     # Predict
-    oof_predictions[val_idx] = model.predict(X_val)
-    test_predictions += model.predict(X_test) / CONFIG['n_folds']
+    fold_oof_pred = model.predict(X_val)
+    fold_test_pred = model.predict(X_test)
+    
+    oof_predictions[val_idx] = fold_oof_pred
+    test_predictions += fold_test_pred / CONFIG['n_folds']
     
     # Calculate SMAPE
-    fold_smape = smape(y_val, oof_predictions[val_idx])
+    fold_smape = smape(y_val, fold_oof_pred)
     fold_scores.append(fold_smape)
+    
+    # Save fold predictions
+    np.save(fold_oof_path, fold_oof_pred)
+    np.save(fold_test_path, fold_test_pred)
+    with open(fold_score_path, 'w') as f:
+        f.write(str(fold_smape))
+    
     print(f"   Fold {fold} SMAPE: {fold_smape:.3f}%")
+    print(f"   💾 Saved fold {fold} cache")
     print()
 
 # ============================================================================

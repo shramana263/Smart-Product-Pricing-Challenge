@@ -1,0 +1,11 @@
+{
+  "data_dir": "/home/sagemaker-user/Smart-Product-Pricing-Challenge/try2/dataset",
+  "output_dir": "/home/sagemaker-user/Smart-Product-Pricing-Challenge/try3/outputs/phase1_log_transform",
+  "model_name": "distilbert-base-uncased",
+  "max_length": 256,
+  "batch_size": 16,
+  "learning_rate": 2e-05,
+  "epochs": 3,
+  "n_folds": 5,
+  "random_seed": 42
+}

@@ -1,0 +1,79 @@
+
+# INTEGRATION WITH DISTILBERT MODEL
+
+## Option 1: Add Unit Features to Model Input
+
+Instead of just using `catalog_content` as text input, enrich it:
+
+```python
+def enrich_text_with_units(row):
+    '''Add unit information to text for better understanding'''
+    text = row['catalog_content']
+    
+    # Add standardized unit info
+    if pd.notna(row['unit']):
+        text += f" [Unit: {row['unit']}]"
+    
+    # Add multiplier info
+    if row['multiplier'] > 1:
+        text += f" [Quantity: {row['multiplier']:.0f}x]"
+    
+    # Add unit category
+    if row['unit_category'] != 'unknown':
+        text += f" [Type: {row['unit_category']}]"
+    
+    return text
+
+# Apply to data
+train['enriched_content'] = train.apply(enrich_text_with_units, axis=1)
+test['enriched_content'] = test.apply(enrich_text_with_units, axis=1)
+
+# Use enriched_content instead of catalog_content in DistilBERT
+```
+
+## Option 2: Train on Per-Unit Price (Then Scale Back)
+
+For bulk items, train model to predict per-unit price, then multiply:
+
+```python
+# Training
+train['target'] = train['price_per_unit']  # Train on per-unit
+
+# Prediction
+pred_per_unit = model.predict(test['enriched_content'])
+final_pred = pred_per_unit * test['multiplier']  # Scale back to total
+```
+
+## Option 3: Separate Models by Unit Category
+
+Train specialized models for different unit types:
+
+```python
+# Weight-based products (oz, lb, g, kg)
+model_weight = train_on_subset(train[train['unit_category'] == 'weight'])
+
+# Count-based products (pack, box, case)
+model_count = train_on_subset(train[train['unit_category'] == 'count'])
+
+# Volume-based products (ml, l, gal)
+model_volume = train_on_subset(train[train['unit_category'] == 'volume'])
+
+# Ensemble predictions
+```
+
+## Expected Impact
+
+Based on research findings:
+
+- Multiplier extraction: +2-3 SMAPE points
+  (Fixes cases like $691 actual vs $30 predicted)
+
+- Unit standardization: +1-2 SMAPE points
+  (Reduces confusion between oz/Oz/ounce)
+
+- Per-unit pricing: +1-2 SMAPE points
+  (Better handles bulk quantity variations)
+
+**Total Expected: -3 to -4 SMAPE points**
+
+From 49-50% (after log transform) → 47-48% SMAPE
