@@ -26,14 +26,19 @@ from collections import Counter
 import warnings
 warnings.filterwarnings('ignore')
 
+# Import auto-configuration
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from config_auto import DATA_DIR, OUTPUT_DIR
+
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
 
 CONFIG = {
-    'data_dir': Path("../../try2/dataset"),
-    'research_dir': Path("../outputs"),
-    'output_dir': Path("../outputs/phase1_unit_standardization"),
+    'data_dir': DATA_DIR,
+    'unit_dir': OUTPUT_DIR / "phase1_unit_standardization",
+    'output_dir': OUTPUT_DIR / "phase1_unit_standardization",
     'random_seed': 42
 }
 

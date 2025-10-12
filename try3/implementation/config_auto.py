@@ -28,15 +28,18 @@ def get_data_path(env):
     if env == 'sagemaker':
         # Common SageMaker paths
         possible_paths = [
+            Path("/home/sagemaker-user/Smart-Product-Pricing-Challenge/try2/dataset"),
             Path("/home/sagemaker-user/Amazon_ML_hackathon/code/try2/dataset"),
             Path("/home/sagemaker-user/code/try2/dataset"),
             Path("/opt/ml/input/data"),
         ]
         for path in possible_paths:
             if path.exists():
-                return path
+                csv_files = list(path.glob("*.csv"))
+                if csv_files:  # Make sure CSV files exist
+                    return path
         # Default if none exist yet
-        return Path("/home/sagemaker-user/Amazon_ML_hackathon/code/try2/dataset")
+        return Path("/home/sagemaker-user/Smart-Product-Pricing-Challenge/try2/dataset")
     
     elif env == 'windows':
         # Windows path (your current setup)
@@ -48,6 +51,11 @@ def get_data_path(env):
 
 def get_output_path(env):
     """Get output directory path"""
+    if env == 'sagemaker':
+        # Use absolute path for SageMaker
+        return Path("/home/sagemaker-user/Smart-Product-Pricing-Challenge/try3/outputs")
+    
+    # For local environments, calculate relative to data path
     data_path = get_data_path(env)
     # Go up 2 levels (dataset -> try2 -> code) then into try3
     try3_path = data_path.parent.parent / "try3"

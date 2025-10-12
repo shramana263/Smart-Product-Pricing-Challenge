@@ -26,13 +26,18 @@ from transformers import DistilBertTokenizer, DistilBertForSequenceClassificatio
 import warnings
 warnings.filterwarnings('ignore')
 
+# Import auto-configuration
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from config_auto import DATA_DIR, OUTPUT_DIR
+
 # ============================================================================
 # CONFIGURATION
 # ============================================================================
 
 CONFIG = {
-    'data_dir': Path("../../try2/dataset"),
-    'output_dir': Path("../outputs/phase1_log_transform"),
+    'data_dir': DATA_DIR,
+    'output_dir': OUTPUT_DIR / "phase1_log_transform",
     'model_name': 'distilbert-base-uncased',
     'max_length': 256,
     'batch_size': 16,
