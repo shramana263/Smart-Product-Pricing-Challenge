@@ -145,5 +145,3 @@ Violations lead to **immediate disqualification**.
 * Handle **outliers** and preprocess data carefully
 
 ---
-
-Let me know if you’d like this converted to PDF, DOCX, or split into structured sections for documentation!
