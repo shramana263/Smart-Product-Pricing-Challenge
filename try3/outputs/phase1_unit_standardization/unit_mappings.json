@@ -1,0 +1,107 @@
+{
+  "standard_units": [
+    "oz",
+    "lb",
+    "g",
+    "kg",
+    "mg",
+    "ml",
+    "l",
+    "gal",
+    "qt",
+    "pt",
+    "cup",
+    "tbsp",
+    "tsp",
+    "count",
+    "pack",
+    "box",
+    "case",
+    "bag",
+    "bottle",
+    "can",
+    "jar",
+    "tube",
+    "roll",
+    "sheet",
+    "ft",
+    "in",
+    "cm",
+    "m",
+    "yd",
+    "sqft",
+    "sqin",
+    "day",
+    "hr",
+    "w",
+    "kwh",
+    "gb",
+    "mb",
+    "serving",
+    "dose",
+    "capsule",
+    "tablet"
+  ],
+  "unit_categories": {
+    "weight": [
+      "oz",
+      "lb",
+      "g",
+      "kg",
+      "mg"
+    ],
+    "volume": [
+      "ml",
+      "l",
+      "gal",
+      "qt",
+      "pt",
+      "cup",
+      "tbsp",
+      "tsp"
+    ],
+    "count": [
+      "count",
+      "pack",
+      "box",
+      "case",
+      "bag",
+      "bottle",
+      "can",
+      "jar",
+      "tube",
+      "roll",
+      "sheet"
+    ],
+    "length": [
+      "ft",
+      "in",
+      "cm",
+      "m",
+      "yd"
+    ],
+    "area": [
+      "sqft",
+      "sqin"
+    ],
+    "time": [
+      "day",
+      "hr"
+    ],
+    "power": [
+      "w",
+      "kwh"
+    ],
+    "data": [
+      "gb",
+      "mb"
+    ],
+    "medical": [
+      "serving",
+      "dose",
+      "capsule",
+      "tablet"
+    ]
+  },
+  "total_variations": 142
+}

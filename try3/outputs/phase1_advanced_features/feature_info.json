@@ -1,0 +1,68 @@
+{
+  "total_features": 29,
+  "feature_categories": {
+    "brand": [
+      "brand",
+      "brand_tier"
+    ],
+    "premium_signals": [
+      "premium_count",
+      "premium_material",
+      "budget_count",
+      "budget_material",
+      "premium_signal"
+    ],
+    "text_complexity": [
+      "text_char_count",
+      "text_word_count",
+      "text_sentence_count",
+      "text_avg_word_length",
+      "text_capital_ratio",
+      "text_digit_ratio",
+      "text_special_char_ratio",
+      "text_unique_word_ratio"
+    ],
+    "category": [
+      "category"
+    ],
+    "unit": [
+      "unit",
+      "price_per_unit",
+      "unit_category",
+      "unit_premium",
+      "bulk_unit"
+    ],
+    "interactions": [
+      "qty_premium_interaction",
+      "brand_category",
+      "is_bulk",
+      "bulk_unit"
+    ]
+  },
+  "numerical_features": [
+    "multiplier",
+    "premium_signal",
+    "premium_count",
+    "budget_count",
+    "text_char_count",
+    "text_word_count",
+    "text_avg_word_length",
+    "text_unique_word_ratio",
+    "text_digit_ratio",
+    "qty_premium_interaction",
+    "is_bulk"
+  ],
+  "correlations": {
+    "premium_count": 0.15871898130613427,
+    "text_char_count": 0.14675238800977036,
+    "text_word_count": 0.14442332594206747,
+    "budget_count": 0.14013500467234524,
+    "premium_signal": 0.12195798442455599,
+    "text_unique_word_ratio": -0.09659791116991923,
+    "text_digit_ratio": -0.05789290553039223,
+    "text_avg_word_length": 0.05324214761834543,
+    "is_bulk": 0.02867421090529559,
+    "qty_premium_interaction": -0.002684156014225698,
+    "multiplier": -0.001825340520544285
+  }
+}

@@ -30,6 +30,12 @@ try2/modeling/**/checkpoints/
 try2/catboost_info/
 try2/modeling/catboost_info/
 try3/research/outputs/sample_images/
+try3/outputs/final_model/embeddings_cache
+try3/outputs/final_model/fold_cache
+try3/outputs/phase1_advanced_features/test_with_advanced_features.csv
+try3/outputs/phase1_advanced_features/train_with_advanced_features.csv
+try3/outputs/phase1_unit_standardization/test_with_units.csv
+try3/outputs/phase1_unit_standardization/train_with_units.csv
 
 # TensorBoard logs
 runs/
