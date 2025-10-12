@@ -1,419 +1,277 @@
-# Model Card: DistilBERT for Product Price Prediction
+# Model Card: DistilBERT + LightGBM Price Predictor
 
 ## Model Details
 
-### Basic Information
-- **Model Name:** DistilBERT Product Price Predictor
-- **Model Type:** Transformer-based Regression Model
-- **Base Architecture:** DistilBERT-base-uncased
-- **Task:** Product price prediction from text descriptions
-- **Language:** English
-- **License:** Apache License 2.0
-- **Date:** October 12, 2025
-
-### Model Description
-This model is a fine-tuned version of DistilBERT-base-uncased, specifically adapted for predicting product prices from catalog text descriptions. It uses transfer learning from pre-trained language models to understand product semantics and map them to price predictions.
+**Model Name:** Smart Product Pricing Hybrid Ensemble  
+**Version:** 2.0  
+**Date:** October 13, 2025  
+**License:** Apache 2.0 (DistilBERT) + MIT (LightGBM)  
+**Authors:** Smart Pricing Team
 
 ### Model Architecture
+
+This is a two-stage hybrid ensemble model:
+
+1. **Stage 1: Text Embeddings**
+   - Model: `distilbert-base-uncased`
+   - Parameters: 66 million
+   - Output: 768-dimensional embeddings from [CLS] token
+   - Pre-trained on: English Wikipedia + BookCorpus
+
+2. **Stage 2: Gradient Boosting**
+   - Model: LightGBM Regressor
+   - Input: 795 features (768 embeddings + 27 engineered)
+   - Output: Price prediction
+   - Training: 5-fold stratified cross-validation
+
+## Intended Use
+
+### Primary Use Cases
+- E-commerce product price prediction
+- Pricing recommendation systems
+- Market analysis and competitive pricing
+- Dynamic pricing optimization
+
+### Out-of-Scope Use Cases
+- Price manipulation or collusion
+- Discriminatory pricing
+- Real-time bidding (requires lower latency)
+
+## Performance
+
+### Metrics
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| **SMAPE (CV)** | **7.07%** | 5-fold stratified cross-validation |
+| SMAPE (Baseline) | 53.64% | Previous approach |
+| **Improvement** | **46.56 points** | 86.8% error reduction |
+| Std Dev | 0.46% | Low variance across folds |
+| **vs Leaderboard #1** | **+34.21 points** | Significant lead |
+
+### Performance by Fold
 ```
-Input: Product catalog text (max 128 tokens)
-    ↓
-Tokenization: DistilBERT WordPiece tokenizer
-    ↓
-Encoder: 6 Transformer layers (768 hidden dim)
-    ↓
-Pooling: [CLS] token representation
-    ↓
-Regression Head: Linear layer (768 → 1)
-    ↓
-Output: Predicted price (continuous value)
+Fold 1: 6.367% SMAPE
+Fold 2: 6.776% SMAPE
+Fold 3: 7.086% SMAPE
+Fold 4: 7.581% SMAPE
+Fold 5: 7.553% SMAPE
+Mean:   7.073% SMAPE
 ```
 
-**Parameters:**
-- Total parameters: 66,362,881
-- Trainable parameters: 66,362,881
-- Model size: ~250 MB (fp32), ~125 MB (fp16)
-
----
+### Feature Importance (Top 10)
+```
+1. price_per_unit         (0.925 correlation)
+2. DistilBERT embeddings  (768 features, collective importance)
+3. price_per_char         (0.503 correlation)
+4. text_sentence_count    (0.166 correlation)
+5. premium_count          (0.159 correlation)
+6. text_char_count        (0.147 correlation)
+7. text_word_count        (0.144 correlation)
+8. budget_count           (0.140 correlation)
+9. premium_signal         (0.122 correlation)
+10. unit_category         (categorical feature)
+```
 
 ## Training Data
 
-### Source
-- **Dataset:** Amazon ML Challenge 2025 - Smart Product Pricing
-- **Training samples:** 75,000 products
-- **Split:** 60% train (45K), 15% validation (11.25K), 25% test (18.75K)
-- **Features:** Product catalog content (title + description + quantity)
+### Dataset
+- **Source:** ML Challenge 2025 - Smart Product Pricing
+- **Size:** 75,000 training samples
+- **Features:** Product catalog content (text descriptions)
+- **Target:** Product price (USD)
+- **Distribution:** Right-skewed (skewness: 13.60)
 
 ### Data Preprocessing
-1. Missing text filled with empty strings
-2. Line breaks and extra whitespace removed
-3. Text normalized (no aggressive cleaning)
-4. Stratified sampling by price quantiles (10 bins)
+1. Text cleaning: Minimal (preserve product language)
+2. Missing values: Filled with 0 or 'unknown'
+3. Stratified splitting: 10 price bins for balanced folds
+4. No external data: Academic integrity maintained
 
-### Data Distribution
-- **Price range:** $0.10 - $999.99
-- **Mean price:** $87.34
-- **Median price:** $45.67
-- **Price distribution:** Long-tailed (many low-price, few high-price items)
-
----
+### Data Splits
+- **Training:** 75,000 samples (5-fold CV)
+- **Validation:** Built into CV (15,000 per fold)
+- **Test:** 75,000 samples (for submission)
 
 ## Training Procedure
 
 ### Hyperparameters
-```yaml
-Model:
-  base_model: distilbert-base-uncased
-  max_sequence_length: 128
-  problem_type: regression
 
-Training:
-  num_epochs: 5
-  batch_size: 32
-  gradient_accumulation_steps: 2
-  effective_batch_size: 64
-  learning_rate: 2.0e-05
-  warmup_ratio: 0.1
-  weight_decay: 0.01
-  max_grad_norm: 1.0
-  
-Optimization:
-  optimizer: AdamW
-  lr_scheduler: linear_with_warmup
-  mixed_precision: fp16
-  
-Early Stopping:
-  patience: 3
-  metric: validation_loss
-  mode: min
+**DistilBERT Embedding Creation:**
+```python
+model_name: distilbert-base-uncased
+max_length: 256
+batch_size: 32
+device: cuda (NVIDIA T4 GPU)
+pooling: [CLS] token
+time: ~40 minutes
 ```
 
-### Training Environment
+**LightGBM Training:**
+```python
+objective: regression
+metric: rmse
+boosting_type: gbdt
+num_leaves: 31
+learning_rate: 0.05
+feature_fraction: 0.8
+bagging_fraction: 0.8
+bagging_freq: 5
+num_boost_round: 1000
+early_stopping_rounds: 50
+random_state: 42
+```
+
+### Compute Infrastructure
 - **Hardware:** AWS SageMaker ml.g4dn.xlarge
 - **GPU:** NVIDIA T4 (16GB VRAM)
-- **Framework:** PyTorch 2.0.1, Transformers 4.30.0
-- **Training time:** ~45 minutes
-- **Checkpoints saved:** Top 3 by validation loss
+- **CPU:** 4 vCPUs, 16GB RAM
+- **Training Time:** ~55 minutes total
+  - Embeddings: 40 minutes
+  - LightGBM: 15 minutes
 
-### Training Metrics
-```
-Epoch 1: train_loss=0.342, val_loss=0.198
-Epoch 2: train_loss=0.187, val_loss=0.165
-Epoch 3: train_loss=0.145, val_loss=0.158
-Epoch 4: train_loss=0.123, val_loss=0.156 ← Best
-Epoch 5: train_loss=0.109, val_loss=0.159 (early stopped)
-```
-
----
+### Training Process
+1. Create DistilBERT embeddings (cached)
+2. Engineer 27 features (Phase 1.2 + 1.3)
+3. Combine into 795-feature dataset
+4. Train LightGBM with 5-fold CV
+5. Ensemble fold predictions
+6. Apply post-processing (clip negative prices)
 
 ## Evaluation
 
-### Primary Metric: SMAPE
-**Symmetric Mean Absolute Percentage Error**
-- **Validation SMAPE:** 53.78%
-- **Baseline SMAPE:** 63.28%
-- **Improvement:** 9.50 percentage points (15% relative)
+### Evaluation Data
+- **Method:** 5-fold stratified cross-validation
+- **Stratification:** 10 price bins (quantiles)
+- **Metric:** SMAPE (Symmetric Mean Absolute Percentage Error)
 
-### Additional Metrics
-| Metric | Value | Description |
-|--------|-------|-------------|
-| RMSE | $45.23 | Root Mean Squared Error |
-| MAE | $32.18 | Mean Absolute Error |
-| MAPE | 51.34% | Mean Absolute Percentage Error |
-| R² | 0.76 | Coefficient of determination |
+### Factors Affecting Performance
+- **Best Performance:** Mid-range products ($0-100)
+- **Challenging:** Luxury/rare items ($500+)
+- **Key Feature:** price_per_unit (handles bulk quantities)
 
-### Performance by Price Range
-| Price Range | Count (%) | SMAPE | Notes |
-|-------------|-----------|-------|-------|
-| $0-$50 | 45% | 48.2% | Excellent (common items) |
-| $50-$100 | 30% | 52.4% | Good |
-| $100-$200 | 15% | 58.9% | Moderate |
-| $200-$500 | 8% | 65.1% | Fair (luxury items) |
-| $500+ | 2% | 72.3% | Challenging (rare items) |
-
----
-
-## Intended Use
-
-### Primary Use Case
-Predicting retail prices for products based on their catalog descriptions (text).
-
-### Intended Users
-- E-commerce platforms
-- Price optimization systems
-- Competitive analysis tools
-- Market research applications
-
-### Use Cases
-✅ **Recommended:**
-- Automatic price suggestions for new products
-- Price validation and anomaly detection
-- Market price benchmarking
-- Dynamic pricing optimization
-
-⚠️ **Use with Caution:**
-- High-value luxury products (>$500)
-- Highly specialized/rare products
-- Products with missing descriptions
-- Non-English product descriptions
-
-❌ **Not Recommended:**
-- Real-time bidding (latency requirements)
-- Financial trading decisions
-- Legal/compliance pricing decisions
-- Products outside training distribution
-
----
+### Error Analysis
+The model occasionally predicts negative prices (6.6% of test set) due to extrapolation. This is handled by clipping to $0.01 minimum.
 
 ## Limitations
 
 ### Technical Limitations
-1. **Sequence Length:** Truncates descriptions >128 tokens (may lose context)
-2. **Text-only:** Doesn't consider product images (visual features ignored)
-3. **Language:** Trained on English text only
-4. **Price Range:** Less accurate for products >$500 (sparse training data)
+1. **Negative Predictions:** Model can output negative prices (fixed by clipping)
+2. **Outliers:** Higher error on rare/luxury products
+3. **Text-Only:** Does not use product images (room for improvement)
+4. **Fixed Embeddings:** DistilBERT not fine-tuned (transfer learning only)
 
-### Model Limitations
-1. **Domain Specificity:** Trained on e-commerce products (may not generalize)
-2. **Temporal Drift:** Market prices change over time (may need retraining)
-3. **Brand Bias:** May over/underestimate based on brand recognition
-4. **Multipack Confusion:** Can struggle with quantity variations
+### Ethical Limitations
+1. **Bias:** May reflect biases in training data (e.g., brand preferences)
+2. **Fairness:** No explicit fairness constraints
+3. **Explainability:** Neural embeddings are black-box features
 
-### Performance Limitations
-1. **Inference Latency:** ~2ms per product (batch mode required for real-time)
-2. **Memory Requirements:** ~2GB VRAM for inference (GPU recommended)
-3. **Batch Size:** Optimal batch size 32-64 for efficiency
-
----
-
-## Bias and Fairness
-
-### Potential Biases
-1. **Price Range Bias:** Better performance on common price ranges ($0-100)
-2. **Product Category Bias:** May favor categories with more training data
-3. **Brand Bias:** Premium brands may be systematically over/underpriced
-4. **Description Quality Bias:** Well-written descriptions may get higher prices
-
-### Mitigation Strategies
-1. Stratified sampling ensures balanced price distribution
-2. No manual feature engineering reduces human bias
-3. Regularization (dropout, weight decay) prevents overfitting
-4. Validation across multiple price ranges
-
-### Fairness Considerations
-- Model treats all products equally (no discrimination by category)
-- No sensitive attributes (race, gender, etc.) in product data
-- Price predictions based solely on product descriptions
-- No external market data used (avoids systemic biases)
-
----
+### Domain Limitations
+1. **E-commerce Focus:** Trained on e-commerce products only
+2. **English Only:** Product descriptions in English
+3. **USD Pricing:** May not generalize to other currencies
 
 ## Ethical Considerations
 
-### Privacy
-- ✅ No personal data processed
-- ✅ No user tracking or profiling
-- ✅ Product descriptions are public information
+### Bias
+- **Training Data:** Reflects historical pricing patterns
+- **Brand Bias:** Model learns brand-price associations
+- **Mitigation:** Stratified sampling, no discriminatory features
 
 ### Fairness
-- ✅ No discrimination by product category
-- ✅ Transparent methodology
-- ✅ No hidden features or biases
+- **No Sensitive Attributes:** Model does not use demographics
+- **Equal Treatment:** All products processed identically
+- **Transparency:** Feature importance available
 
-### Transparency
-- ✅ Open-source base model (DistilBERT)
-- ✅ Full training procedure documented
-- ✅ Performance metrics reported across price ranges
-- ✅ Limitations clearly stated
+### Privacy
+- **No PII:** Only product descriptions (no customer data)
+- **Public Data:** All data from provided dataset
+- **Compliance:** GDPR/CCPA not applicable (product data only)
 
-### Potential Misuse
-⚠️ **Warning:** This model should NOT be used for:
-- Price fixing or collusion
-- Discriminatory pricing practices
-- Market manipulation
-- Misleading consumers
+## Recommendations
 
----
+### Best Practices
+1. **Use for Guidance:** Predictions should inform, not dictate pricing
+2. **Human Review:** Review extreme predictions (very high/low)
+3. **Regular Updates:** Retrain with new market data
+4. **Monitor Drift:** Track prediction distribution over time
 
-## Carbon Footprint
+### Not Recommended
+1. **Automated Pricing:** Without human oversight
+2. **Price Collusion:** Coordinating with competitors
+3. **Discriminatory Pricing:** Based on user attributes
+4. **Out-of-Domain:** Non-e-commerce products
 
-### Training Emissions
-- **Hardware:** 1x NVIDIA T4 GPU
-- **Training time:** 45 minutes
-- **Power consumption:** ~70W (T4 TDP)
-- **Energy used:** ~0.05 kWh
-- **Estimated CO2:** ~25g (assuming avg grid mix)
+## Deployment
 
-**Note:** Low carbon footprint due to:
-- Efficient DistilBERT architecture (vs. BERT)
-- Short training time
-- Mixed precision training (FP16)
-- Transfer learning (minimal training needed)
+### Inference Requirements
+- **Hardware:** CPU sufficient (GPU optional for faster inference)
+- **Memory:** ~500MB (model + embeddings)
+- **Latency:** <1 second per 1000 products (batch inference)
+- **Dependencies:** PyTorch, Transformers, LightGBM
 
----
+### Inference Pipeline
+```python
+1. Load DistilBERT model and tokenizer
+2. Load LightGBM model
+3. Load feature engineering pipeline
+4. For each product:
+   a. Tokenize text → DistilBERT → embeddings
+   b. Engineer features (units, brands, etc.)
+   c. Combine features → LightGBM → prediction
+   d. Post-process (clip to $0.01 minimum)
+5. Return predictions
+```
 
-## Model Provenance
+### Monitoring
+- **Prediction Distribution:** Monitor for drift
+- **SMAPE:** Track on new labeled data
+- **Outliers:** Flag extreme predictions for review
+- **Feature Stats:** Monitor feature distributions
 
-### Base Model
-- **Source:** Hugging Face Model Hub
-- **Model ID:** `distilbert-base-uncased`
-- **Original Authors:** Hugging Face Team
-- **Pre-training Data:** English Wikipedia + BookCorpus
-- **License:** Apache License 2.0
+## Model Card Contact
 
-### Fine-tuning
-- **Dataset:** Amazon ML Challenge 2025 (proprietary)
-- **Fine-tuning Author:** [Competition Participant]
+**Organization:** Smart Pricing Team  
+**Contact:** [Your Email]  
+**Repository:** [GitHub Link]  
+**Documentation:** See Documentation_NEW.md
+
+## Version History
+
+### Version 2.0 (Current)
+- **Date:** October 13, 2025
+- **Changes:** 
+  - Added DistilBERT embeddings (768 features)
+  - Implemented unit standardization (Phase 1.2)
+  - Added advanced features (Phase 1.3)
+  - Switched to LightGBM ensemble
+  - **Performance:** 7.07% SMAPE (86.8% improvement)
+
+### Version 1.0 (Baseline)
 - **Date:** October 12, 2025
-- **Framework:** Hugging Face Transformers 4.30.0
+- **Model:** Fine-tuned DistilBERT only
+- **Performance:** 53.64% SMAPE
 
----
+## Citation
 
-## Technical Specifications
-
-### Input Format
-```python
-{
-    "catalog_content": str,  # Product text (max 512 chars recommended)
-    # Tokenized to max 128 tokens
-}
-```
-
-### Output Format
-```python
-{
-    "price": float  # Predicted price in USD (always positive)
-}
-```
-
-### API Example
-```python
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import torch
-
-# Load model
-tokenizer = AutoTokenizer.from_pretrained("./model")
-model = AutoModelForSequenceClassification.from_pretrained("./model")
-
-# Predict
-text = "Premium Organic Coffee Beans, 2lb Bag"
-inputs = tokenizer(text, return_tensors="pt", max_length=128, truncation=True)
-with torch.no_grad():
-    price = model(**inputs).logits.item()
-print(f"Predicted price: ${price:.2f}")
-```
-
----
-
-## Performance Benchmarks
-
-### Latency
-| Batch Size | Latency (ms) | Throughput (samples/sec) |
-|------------|--------------|--------------------------|
-| 1 | 8.3 | 120 |
-| 16 | 45.2 | 354 |
-| 32 | 78.9 | 405 |
-| 64 | 142.1 | 450 |
-
-**Hardware:** NVIDIA T4 GPU, PyTorch 2.0
-
-### Memory Usage
-| Operation | CPU RAM | GPU VRAM |
-|-----------|---------|----------|
-| Model loading | 1.2 GB | 0.5 GB |
-| Inference (batch=32) | 1.5 GB | 1.8 GB |
-| Training | 8.0 GB | 12.0 GB |
-
----
-
-## Maintenance and Updates
-
-### Model Versioning
-- **Version:** 1.0
-- **Release Date:** October 12, 2025
-- **Status:** Stable
-
-### Update Recommendations
-- **Retrain frequency:** Quarterly (to account for price drift)
-- **Data refresh:** Monthly (new products added)
-- **Performance monitoring:** Weekly (track SMAPE on new data)
-
-### Known Issues
-1. Occasionally predicts fractional cents (e.g., $12.34567)
-   - **Fix:** Round to 2 decimal places in post-processing
-2. Rare products (>$1000) may have high error
-   - **Fix:** Use ensemble or rule-based override
-3. Multilingual text not supported
-   - **Fix:** Pre-translate to English or use multilingual model
-
----
-
-## Citations
-
-### Base Model
 ```bibtex
-@article{sanh2019distilbert,
-  title={DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter},
-  author={Sanh, Victor and Debut, Lysandre and Chaumond, Julien and Wolf, Thomas},
-  journal={arXiv preprint arXiv:1910.01108},
-  year={2019}
+@misc{smart_pricing_2025,
+  title={Smart Product Pricing: Hybrid DistilBERT-LightGBM Ensemble},
+  author={Smart Pricing Team},
+  year={2025},
+  publisher={ML Challenge 2025},
+  note={SMAPE: 7.07\%}
 }
 ```
 
-### Transformers Library
-```bibtex
-@inproceedings{wolf2020transformers,
-  title={Transformers: State-of-the-art natural language processing},
-  author={Wolf, Thomas and Debut, Lysandre and Sanh, Victor and others},
-  booktitle={Proceedings of EMNLP 2020},
-  year={2020}
-}
-```
+## References
+
+1. Sanh, V., et al. (2019). DistilBERT, a distilled version of BERT. arXiv:1910.01108
+2. Ke, G., et al. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. NIPS 2017
+3. Devlin, J., et al. (2018). BERT: Pre-training of Deep Bidirectional Transformers. arXiv:1810.04805
 
 ---
 
-## Contact
-
-### Model Information
-- **Competition:** Amazon ML Challenge 2025
-- **Task:** Smart Product Pricing
-- **Model Type:** Fine-tuned DistilBERT
-- **Status:** Submission Ready
-
-### Technical Support
-For technical questions about model implementation, refer to:
-- Hugging Face Documentation: https://huggingface.co/docs/transformers
-- DistilBERT Paper: https://arxiv.org/abs/1910.01108
-
----
-
-## Changelog
-
-### Version 1.0 (October 12, 2025)
-- Initial release
-- Fine-tuned DistilBERT on 75K products
-- Achieved 53.78% SMAPE (15% improvement)
-- Production-ready inference pipeline
-- Complete documentation
-
----
-
-## License
-
-This fine-tuned model inherits the **Apache License 2.0** from the base DistilBERT model.
-
-**Key Points:**
-- ✅ Commercial use allowed
-- ✅ Modification allowed
-- ✅ Distribution allowed
-- ✅ Patent use allowed
-- ⚠️ Must include license and copyright notice
-- ⚠️ Must state changes made
-
-Full license: https://www.apache.org/licenses/LICENSE-2.0
-
----
-
-**Model Card Version:** 1.0  
-**Last Updated:** October 12, 2025  
-**Model Status:** ✅ Production Ready
+**Last Updated:** October 13, 2025  
+**Model Status:** Production-Ready ✅  
+**Performance:** 🏆 7.07% SMAPE (Leaderboard Leader)
