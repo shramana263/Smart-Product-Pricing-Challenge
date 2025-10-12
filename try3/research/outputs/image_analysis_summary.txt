@@ -1,0 +1,19 @@
+================================================================================
+IMAGE ANALYSIS SUMMARY
+================================================================================
+
+IMAGE AVAILABILITY
+--------------------------------------------------------------------------------
+Total samples analyzed: 120
+Successfully downloaded: 120 (100.0%)
+
+IMAGE PROPERTIES
+--------------------------------------------------------------------------------
+Average dimensions: 1627 x 1737 px
+Average aspect ratio: 0.96
+
+VISUAL FEATURES
+--------------------------------------------------------------------------------
+Features extracted: 120 images
+Average brightness: 189.13
+Average color variance: 73.32

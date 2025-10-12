@@ -29,6 +29,7 @@ try2/modeling/**/logs/
 try2/modeling/**/checkpoints/
 try2/catboost_info/
 try2/modeling/catboost_info/
+try3/research/outputs/sample_images/
 
 # TensorBoard logs
 runs/

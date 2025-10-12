@@ -1,0 +1,56 @@
+================================================================================
+COMPREHENSIVE DATA RESEARCH SUMMARY
+================================================================================
+
+DATASET OVERVIEW
+--------------------------------------------------------------------------------
+Total samples: 75,000
+Unique brands: 29,201
+Unique units: 99
+
+PRICE STATISTICS
+--------------------------------------------------------------------------------
+count       :       75,000
+mean        : $       23.65
+median      : $       14.00
+std         : $       33.38
+min         : $        0.13
+max         : $     2796.00
+q25         : $        6.79
+q75         : $       28.62
+iqr         : $       21.83
+skewness    : $       13.60
+kurtosis    : $      736.65
+
+TOP 20 BRANDS
+--------------------------------------------------------------------------------
+ 1. Food to                                   :    947 | Avg: $  46.58
+ 2. Betty Crocker                             :    315 | Avg: $   8.15
+ 3. Bob's Red                                 :    273 | Avg: $  16.30
+ 4. Amoretti                                  :    231 | Avg: $  50.59
+ 5. Marshalls Creek                           :    230 | Avg: $  18.27
+ 6. Crystal Light                             :    227 | Avg: $  13.07
+ 7. Simply Organic                            :    193 | Avg: $  11.78
+ 8. Goya Foods                                :    181 | Avg: $  13.48
+ 9. Jelly Belly                               :    162 | Avg: $  23.69
+10. Del Monte                                 :    151 | Avg: $   7.94
+11. Kirkland Signature                        :    150 | Avg: $  29.09
+12. Fresh Roasted                             :    150 | Avg: $  43.98
+13. Traditional Medicinals                    :    149 | Avg: $   9.24
+14. Celestial Seasonings                      :    145 | Avg: $  11.08
+15. Frontier Co                               :    140 | Avg: $  21.83
+16. Special Tea                               :    138 | Avg: $  12.76
+17. Green Mountain                            :    132 | Avg: $  26.62
+18. Blue Diamond                              :    128 | Avg: $  12.63
+19. Jell                                      :    116 | Avg: $   4.53
+20. Stonewall Kitchen                         :    110 | Avg: $  13.83
+21. Davidson's Organics                       :    110 | Avg: $  29.68
+22. Mystic Sprinkles                          :    108 | Avg: $  10.57
+23. Community Coffee                          :    105 | Avg: $  22.11
+24. NY Spice                                  :    103 | Avg: $  18.51
+25. Trader Joe's                              :    102 | Avg: $  21.01
+26. McCormick Gourmet                         :    100 | Avg: $  10.36
+27. Pepperidge Farm                           :     99 | Avg: $  11.38
+28. Stash Tea                                 :     99 | Avg: $  18.07
+29. Morton &                                  :     98 | Avg: $  17.13
+30. The Spice                                 :     98 | Avg: $  13.05
