@@ -1,6 +1,55 @@
+# Python environments
 venv/
+venv_distilbert/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+
+# Model files (too large for GitHub)
+try2/modeling/distilbert_*/
+try2/modeling/distilbert_sagemaker/
+try2/modeling/**/final_model/
+try2/modeling/**/*.bin
+try2/modeling/**/*.safetensors
+try2/modeling/**/*.pt
+try2/modeling/**/*.pth
+try2/modeling/**/*.h5
+try2/modeling/**/*.ckpt
+
+# Embeddings (large data files)
 try2/embeddings_data/train_embeddings.csv
 try2/embeddings_data/test_embeddings.csv
-venv_distilbert/
+try2/embeddings_data/*.npy
+try2/embeddings_data/*.pkl
+
+# Training logs and checkpoints
+try2/modeling/**/logs/
+try2/modeling/**/checkpoints/
+try2/catboost_info/
+try2/modeling/catboost_info/
+
+# TensorBoard logs
+runs/
+logs/
+**/events.out.tfevents*
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Large CSV outputs (keep sample ones)
+try2/modeling/test_out_*.csv
+!try2/modeling/test_out_v3_clean.csv  # Keep reference file
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
