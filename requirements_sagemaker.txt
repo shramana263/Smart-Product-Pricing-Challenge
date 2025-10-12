@@ -1,0 +1,30 @@
+# AWS SageMaker Optimized Requirements
+# For DistilBERT Fine-Tuning on Product Price Prediction
+
+# Core ML Libraries
+torch>=2.0.0
+transformers>=4.30.0
+datasets>=2.12.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+
+# Monitoring & Logging
+tensorboard>=2.13.0
+tensorboardX>=2.6
+
+# Performance
+accelerate>=0.20.0  # For distributed training
+bitsandbytes>=0.39.0  # For 8-bit optimizations (optional)
+
+# AWS SDK (if needed for S3 integration)
+boto3>=1.26.0
+sagemaker>=2.160.0
+
+# Progress bars
+tqdm>=4.65.0
+
+# Utilities
+scipy>=1.10.0
