@@ -104,25 +104,45 @@ print("🔍 DATA LEAKAGE CHECK")
 print("-" * 80)
 
 # Check for potential leakage indicators
-train_df = pd.read_csv(OUTPUT_DIR / "phase1_advanced_features" / "train_with_advanced_features.csv")
-
-# Check if any feature correlates too strongly with price
-numeric_cols = train_df.select_dtypes(include=[np.number]).columns
-correlations = train_df[numeric_cols].corr()['PRICE'].abs().sort_values(ascending=False)
-
-print("   Top 10 features by correlation with PRICE:")
-for feat, corr in correlations.head(11).items():  # 11 to skip PRICE itself
-    if feat != 'PRICE':
-        print(f"      {feat:30s}: {corr:.4f}")
-
-if correlations.drop('PRICE').max() > 0.95:
+try:
+    train_df = pd.read_csv(OUTPUT_DIR / "phase1_advanced_features" / "train_with_advanced_features.csv")
+    
+    # Normalize column names to uppercase
+    train_df.columns = train_df.columns.str.upper()
+    
+    # Check if PRICE column exists
+    if 'PRICE' in train_df.columns:
+        # Check if any feature correlates too strongly with price
+        numeric_cols = train_df.select_dtypes(include=[np.number]).columns
+        correlations = train_df[numeric_cols].corr()['PRICE'].abs().sort_values(ascending=False)
+        
+        print("   Top 10 features by correlation with PRICE:")
+        count = 0
+        for feat, corr in correlations.items():
+            if feat != 'PRICE' and count < 10:
+                print(f"      {feat:30s}: {corr:.4f}")
+                count += 1
+        
+        max_corr = correlations.drop('PRICE').max()
+        if max_corr > 0.95:
+            print()
+            print(f"   ⚠️  WARNING: Some features are VERY highly correlated with price ({max_corr:.4f})!")
+            print("      This could indicate data leakage!")
+            print(f"      Top correlated feature: {correlations.drop('PRICE').idxmax()}")
+        else:
+            print()
+            print(f"   ✅ No obvious data leakage detected (max correlation: {max_corr:.4f})")
+    else:
+        print("   ⚠️  Could not find PRICE column for correlation analysis")
+        print(f"   Available columns: {', '.join(train_df.columns[:10])}...")
     print()
-    print("   ⚠️  WARNING: Some features are VERY highly correlated with price!")
-    print("      This could indicate data leakage!")
-else:
+except FileNotFoundError:
+    print("   ⚠️  Could not load training data for leakage check")
+    print(f"   Expected path: {OUTPUT_DIR / 'phase1_advanced_features' / 'train_with_advanced_features.csv'}")
     print()
-    print("   ✅ No obvious data leakage detected")
-print()
+except Exception as e:
+    print(f"   ⚠️  Error during leakage check: {str(e)}")
+    print()
 
 print("="*80)
 print("✅ ANALYSIS COMPLETE")
