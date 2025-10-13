@@ -184,7 +184,7 @@ MLP_CONFIG = {
 # ============================================================================
 
 CV_CONFIG = {
-    'n_folds': 5,
+    'n_folds': 3,  # Reduced from 5 for faster training (40% time savings!)
     'stratify': True,  # Stratified K-Fold based on price bins
     'n_price_bins': 10,
     'shuffle': True,
