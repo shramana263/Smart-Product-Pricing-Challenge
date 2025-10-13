@@ -15,7 +15,7 @@ from scipy.optimize import minimize
 
 # Import auto-config
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from config_auto import DATA_DIR, OUTPUT_DIR
 
 print("="*80)
@@ -84,7 +84,8 @@ if not text_oof_file.exists():
 text_oof_df = pd.read_csv(text_oof_file)
 text_test_df = pd.read_csv(text_test_file)
 
-text_oof_pred = text_oof_df['predicted_price'].values
+# Handle different column names (text model uses 'price', image model uses 'predicted_price')
+text_oof_pred = text_oof_df['price'].values if 'predicted_price' not in text_oof_df.columns else text_oof_df['predicted_price'].values
 text_test_pred = text_test_df['price'].values
 
 print(f"✓ Text model loaded:")

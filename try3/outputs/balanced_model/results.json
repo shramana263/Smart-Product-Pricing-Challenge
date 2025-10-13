@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-10-13T05:30:44.439943",
+  "oof_smape": 58.90947579075644,
+  "fold_scores": [
+    59.38371553355276,
+    58.62717338122086,
+    59.18206948583315,
+    58.52355836658012,
+    58.830862186595276
+  ],
+  "n_features": 780,
+  "excluded_features": [
+    "price_per_unit",
+    "price_per_char"
+  ],
+  "has_embeddings": true,
+  "test_mean_raw": 17.330353255975446,
+  "test_mean_scaled": 20.48900362798772,
+  "scale_factor_applied": 1.1822611648682455
+}

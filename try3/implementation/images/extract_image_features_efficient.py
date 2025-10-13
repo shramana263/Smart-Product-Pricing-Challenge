@@ -22,7 +22,7 @@ import gc
 
 # Import auto-config
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from config_auto import DATA_DIR, OUTPUT_DIR
 
 print("="*80)

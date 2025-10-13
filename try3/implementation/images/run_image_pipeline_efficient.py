@@ -16,7 +16,7 @@ from pathlib import Path
 import time
 
 # Import auto-config
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from config_auto import OUTPUT_DIR
 
 print("="*80)

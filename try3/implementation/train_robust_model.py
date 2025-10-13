@@ -168,7 +168,7 @@ print()
 # STEP 5: PREPARE FEATURES
 # ============================================================================
 X_train = train_df[safe_numeric_features].copy()
-y_train = train_df['PRICE'].values
+y_train = train_df['price'].values
 X_test = test_df[safe_numeric_features].copy()
 
 # Apply log transform to target (helps with skewed distribution)
@@ -267,13 +267,12 @@ print("STEP 8: SAVING PREDICTIONS")
 print("="*80)
 
 # Save OOF
-oof_df = train_df[['ITEM_ID', 'PRICE']].copy()
+oof_df = train_df[['sample_id', 'price']].copy()
 oof_df['PREDICTED_PRICE'] = oof_predictions
 oof_df.to_csv(CONFIG['output_dir'] / 'oof_predictions.csv', index=False)
 
 # Save submission (correct format)
-submission = test_df[['ITEM_ID']].copy()
-submission.columns = ['sample_id']
+submission = test_df[['sample_id']].copy()
 submission['price'] = test_predictions
 submission.to_csv(CONFIG['output_dir'] / 'submission.csv', index=False)
 

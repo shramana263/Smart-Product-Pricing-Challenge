@@ -321,6 +321,12 @@ submission_scaled['price'] = test_predictions_scaled
 submission_scaled.to_csv(CONFIG['output_dir'] / 'submission.csv', index=False)
 print(f"✓ Saved scaled: {CONFIG['output_dir'] / 'submission.csv'} ⭐")
 
+# Save OOF predictions for ensembling
+oof_df = train_df[['sample_id']].copy()
+oof_df['price'] = oof_predictions
+oof_df.to_csv(CONFIG['output_dir'] / 'oof_predictions.csv', index=False)
+print(f"✓ Saved OOF: {CONFIG['output_dir'] / 'oof_predictions.csv'}")
+
 print()
 print(f"📊 Prediction Statistics (Scaled):")
 print(f"   Min:    ${test_predictions_scaled.min():.2f}")

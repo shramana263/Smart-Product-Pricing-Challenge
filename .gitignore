@@ -36,6 +36,8 @@ try3/outputs/phase1_advanced_features/test_with_advanced_features.csv
 try3/outputs/phase1_advanced_features/train_with_advanced_features.csv
 try3/outputs/phase1_unit_standardization/test_with_units.csv
 try3/outputs/phase1_unit_standardization/train_with_units.csv
+try3/outputs/image_model/
+try3/outputs/image_features/
 
 # TensorBoard logs
 runs/
@@ -61,3 +63,4 @@ Thumbs.db
 .idea/
 *.sublime-*
 /images
+/try3/outputs/images_efficient
