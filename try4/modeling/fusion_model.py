@@ -159,10 +159,48 @@ def train_lightgbm_with_cv(train_df, feature_cols, target_col='price'):
     fold_models = []
     oof_predictions = np.zeros(len(X))
     
+    # Check for existing trained folds
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    existing_folds = []
+    for fold_num in range(1, CV_CONFIG['n_folds'] + 1):
+        model_path = MODELS_DIR / f'lightgbm_fold{fold_num}.txt'
+        if model_path.exists():
+            existing_folds.append(fold_num)
+    
+    if existing_folds:
+        print(f"\n💾 Found existing trained folds: {existing_folds}")
+        print(f"✅ Will resume from Fold {max(existing_folds) + 1}")
+        print("="*80)
+    
     print(f"\n🚀 Starting {CV_CONFIG['n_folds']}-fold cross-validation...")
     print("="*80)
     
     for fold, (train_idx, val_idx) in enumerate(skf.split(X, price_bins), 1):
+        model_path = MODELS_DIR / f'lightgbm_fold{fold}.txt'
+        
+        # Check if fold already trained
+        if fold in existing_folds:
+            print(f"\n✅ Fold {fold}/{CV_CONFIG['n_folds']} - Already trained! Loading...")
+            print("-"*80)
+            
+            # Load existing model
+            model = lgb.Booster(model_file=str(model_path))
+            fold_models.append(model)
+            
+            # Evaluate
+            X_val = X[val_idx]
+            y_val_log = y_log[val_idx]
+            val_pred_log = model.predict(X_val)
+            val_pred = np.expm1(val_pred_log)
+            val_true = np.expm1(y_log[val_idx])
+            fold_smape = calculate_smape(val_true, val_pred)
+            
+            print(f"✓ Loaded Fold {fold} SMAPE: {fold_smape:.3f}%")
+            
+            fold_scores.append(fold_smape)
+            oof_predictions[val_idx] = val_pred
+            continue
+        
         print(f"\n📊 Fold {fold}/{CV_CONFIG['n_folds']}")
         print("-"*80)
         
@@ -201,6 +239,10 @@ def train_lightgbm_with_cv(train_df, feature_cols, target_col='price'):
         # Calculate SMAPE
         fold_smape = calculate_smape(val_true, val_pred)
         print(f"\n✓ Fold {fold} SMAPE: {fold_smape:.3f}%")
+        
+        # Save model
+        model.save_model(str(model_path))
+        print(f"✓ Model saved: {model_path.name}")
         
         fold_scores.append(fold_smape)
         fold_models.append(model)
