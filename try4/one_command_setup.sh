@@ -83,6 +83,10 @@ chmod +x install.sh
 ./install.sh
 
 echo ""
+echo "Fixing Python import structure..."
+python fix_imports.py
+
+echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "STEP 4: System Verification"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

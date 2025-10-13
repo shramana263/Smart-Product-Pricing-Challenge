@@ -17,6 +17,7 @@ import sys
 import subprocess
 from pathlib import Path
 import time
+import os
 
 # Add config to path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -62,10 +63,16 @@ def run_stage(stage_name, script_path, skip_if_exists=None):
     start_time = time.time()
     
     try:
+        # Set PYTHONPATH to try4 directory so subprocesses can import config
+        env = os.environ.copy()
+        base_dir = str(Path(__file__).parent)
+        env['PYTHONPATH'] = base_dir + os.pathsep + env.get('PYTHONPATH', '')
+        
         result = subprocess.run(
             [sys.executable, str(script_path)],
             check=True,
-            capture_output=False
+            capture_output=False,
+            env=env
         )
         
         elapsed = time.time() - start_time
