@@ -43,6 +43,11 @@ try3/outputs/distilbert_huber/best_model_fold2.pt
 try3/outputs/distilbert_huber/best_model_fold3.pt
 try3/outputs/distilbert_huber/best_model_fold4.pt
 try3/outputs/distilbert_huber/best_model_fold5.pt
+try3/outputs/two_stage_v2_optimized/best_model_fold1.pt
+try3/outputs/two_stage_v2_optimized/best_model_fold2.pt
+try3/outputs/two_stage_v2_optimized/best_model_fold3.pt
+try3/outputs/two_stage_v2_optimized/best_model_fold4.pt
+try3/outputs/two_stage_v2_optimized/best_model_fold5.pt
 # TensorBoard logs
 runs/
 logs/

@@ -1,0 +1,386 @@
+./
+├── COMMANDS.md
+├── DISTILBERT_GUIDE.md
+├── DISTILBERT_IMAGE_INTEGRATION_PLAN.md
+├── DISTILBERT_SETUP_SUMMARY.md
+├── MODEL_MANAGEMENT.md
+├── PROJECT_DOCUMENTATION.md
+├── PROJECT_OVERVIEW.md
+├── Problem_statement.md
+├── QUICK_ACTION_GUIDE.md
+├── QUICK_REFERENCE.md
+├── QUICK_START.md
+├── Related_research_paper/
+│   ├── Forecasting stock prices.pdf
+│   ├── e-commerce_price_prediction.pdf
+│   ├── multimodal_price_prediction.pdf
+│   └── prediciting_price_with_product_images.pdf
+├── SAGEMAKER_SETUP.md
+├── download_model.py
+├── folder_structure.txt
+├── main.py
+├── outputs/
+│   └── phase1_log_transform/
+├── requirements.txt
+├── requirements_distilbert.txt
+├── requirements_sagemaker.txt
+├── submission/
+│   ├── Documentation.md
+│   ├── README.md
+│   ├── model_card.md
+│   ├── submission-13-10-25-02-29-pm.zip
+│   ├── test_out.csv
+│   └── verify_submission.py
+├── try1/
+│   └── Material/
+│       ├── __MACOSX/
+│       │   └── student_resource/
+│       │       ├── dataset/
+│       │       └── src/
+│       │           └── __pycache__/
+│       └── student_resource/
+│           ├── Documentation_template.md
+│           ├── README.md
+│           ├── dataset/
+│           │   ├── sample_test.csv
+│           │   └── sample_test_out.csv
+│           ├── sample_code.py
+│           └── src/
+│               ├── __pycache__/
+│               │   └── utils.cpython-37.pyc
+│               ├── example.ipynb
+│               └── utils.py
+├── try2/
+│   ├── catboost_info/
+│   │   ├── catboost_training.json
+│   │   ├── learn/
+│   │   │   └── events.out.tfevents
+│   │   ├── learn_error.tsv
+│   │   ├── test/
+│   │   │   └── events.out.tfevents
+│   │   ├── test_error.tsv
+│   │   └── time_left.tsv
+│   ├── dataset/
+│   │   ├── sample_train.csv
+│   │   ├── test1.csv
+│   │   ├── test2.csv
+│   │   ├── train1.csv
+│   │   └── train2.csv
+│   ├── embeddings_data/
+│   │   ├── embedding_info.txt
+│   │   └── pca_model.pkl
+│   ├── images/
+│   │   ├── IMAGE_FEATURES_IMPLEMENTATION_SUMMARY.md
+│   │   ├── IMAGE_FEATURES_README.md
+│   │   ├── IMAGE_PIPELINE_QUICKSTART.md
+│   │   ├── IMAGE_PIPELINE_VISUAL_GUIDE.md
+│   │   ├── IMAGE_QUICK_REFERENCE.md
+│   │   ├── IMAGE_VALIDATION_REPORT.md
+│   │   ├── combine_features_with_images.py
+│   │   ├── image_feature_extraction.py
+│   │   ├── run_image_pipeline.py
+│   │   ├── train_image_only_model.py
+│   │   ├── train_v5_text_image.py
+│   │   └── validate_image_features.py
+│   ├── modeling/
+│   │   ├── best_model.txt
+│   │   ├── catboost_info/
+│   │   │   ├── catboost_training.json
+│   │   │   ├── learn/
+│   │   │   │   └── events.out.tfevents
+│   │   │   ├── learn_error.tsv
+│   │   │   └── time_left.tsv
+│   │   ├── distilbert_sagemaker/
+│   │   │   ├── checkpoint-3200/
+│   │   │   │   ├── config.json
+│   │   │   │   ├── model.safetensors
+│   │   │   │   ├── optimizer.pt
+│   │   │   │   ├── rng_state.pth
+│   │   │   │   ├── scaler.pt
+│   │   │   │   ├── scheduler.pt
+│   │   │   │   ├── trainer_state.json
+│   │   │   │   └── training_args.bin
+│   │   │   ├── checkpoint-3400/
+│   │   │   │   ├── config.json
+│   │   │   │   ├── model.safetensors
+│   │   │   │   ├── optimizer.pt
+│   │   │   │   ├── rng_state.pth
+│   │   │   │   ├── scaler.pt
+│   │   │   │   ├── scheduler.pt
+│   │   │   │   ├── trainer_state.json
+│   │   │   │   └── training_args.bin
+│   │   │   ├── checkpoint-3520/
+│   │   │   │   ├── config.json
+│   │   │   │   ├── model.safetensors
+│   │   │   │   ├── optimizer.pt
+│   │   │   │   ├── rng_state.pth
+│   │   │   │   ├── scaler.pt
+│   │   │   │   ├── scheduler.pt
+│   │   │   │   ├── trainer_state.json
+│   │   │   │   └── training_args.bin
+│   │   │   ├── checkpoints/
+│   │   │   ├── final_model/
+│   │   │   │   ├── config.json
+│   │   │   │   ├── model.safetensors
+│   │   │   │   ├── special_tokens_map.json
+│   │   │   │   ├── tokenizer.json
+│   │   │   │   ├── tokenizer_config.json
+│   │   │   │   └── vocab.txt
+│   │   │   ├── logs/
+│   │   │   │   └── events.out.tfevents.1760267626.default.15516.0
+│   │   │   └── training_results.json
+│   │   ├── embedding_model_results.csv
+│   │   ├── ensemble_distilbert_image.py
+│   │   ├── feature_importance.csv
+│   │   ├── feature_importance_v2.csv
+│   │   ├── feature_importance_v3_clean.csv
+│   │   ├── feature_importance_v3_fair.csv
+│   │   ├── final_lightgbm_model.txt
+│   │   ├── final_predictions.csv
+│   │   ├── improved_modeling.ipynb
+│   │   ├── modeling.ipynb
+│   │   ├── test_out_distilbert_sagemaker.csv
+│   │   ├── test_out_embeddings.csv
+│   │   ├── test_out_v2.csv
+│   │   ├── test_out_v3_clean.csv
+│   │   ├── test_out_v3_fair.csv
+│   │   └── test_predictions.csv
+│   ├── safe_target_encoding.py
+│   ├── text/
+│   │   ├── COMPARISON.md
+│   │   ├── EMBEDDINGS_EXPERIMENT_SUMMARY.md
+│   │   ├── EMBEDDINGS_GUIDE.md
+│   │   ├── LEAKAGE_INVESTIGATION_REPORT.md
+│   │   ├── advanced_feature_engineering.py
+│   │   ├── advanced_feature_engineering_clean.py
+│   │   ├── finetune_distilbert.py
+│   │   ├── finetune_distilbert_sagemaker.py
+│   │   ├── finetune_distilbert_simple.py
+│   │   ├── fix_pytorch_gpu.sh*
+│   │   ├── improvement_plan.md
+│   │   ├── preparation/
+│   │   │   ├── data_preparation.ipynb
+│   │   │   ├── feature_names.txt
+│   │   │   ├── features_clean.csv
+│   │   │   ├── features_v2_list.txt
+│   │   │   ├── features_v2_test.csv
+│   │   │   ├── features_v2_train.csv
+│   │   │   ├── features_v3_clean_list.txt
+│   │   │   ├── features_v3_clean_test.csv
+│   │   │   ├── features_v3_clean_train.csv
+│   │   │   ├── features_v4_safe_target_test.csv
+│   │   │   ├── features_v4_safe_target_train.csv
+│   │   │   └── labels.csv
+│   │   ├── preprocessing/
+│   │   │   ├── TextPreprocessing.ipynb
+│   │   │   ├── heatmap.pdf
+│   │   │   ├── plotting.pdf
+│   │   │   └── processed_features.csv
+│   │   ├── train_v2_features.py
+│   │   ├── train_v3_clean.py
+│   │   └── train_v3_fair_comparison.py
+│   ├── text_embeddings.py
+│   ├── train_embeddings_optimized.py
+│   ├── train_with_embeddings.py
+│   ├── upload_model.sh
+│   ├── verify_setup.py
+│   └── visualize_features.py
+├── try3/
+│   ├── EXECUTION_GUIDE_TO_40.md
+│   ├── QUICK_START.md
+│   ├── README.md
+│   ├── RESEARCH_STATUS.md
+│   ├── SAGEMAKER_INSTANCE_GUIDE.md
+│   ├── STRATEGY_TO_40_PERCENT.md
+│   ├── implementation/
+│   │   ├── FINAL_DTYPE_FIX_GUIDE.md
+│   │   ├── FINAL_FP16_FIX.sh
+│   │   ├── FIX_DTYPE_ISSUE.md
+│   │   ├── IMPLEMENTATION_ROADMAP.md
+│   │   ├── IMPLEMENTATION_SUMMARY.md
+│   │   ├── PROGRESS.md
+│   │   ├── QUICK_START_PHASE1.md
+│   │   ├── README.md
+│   │   ├── SAGEMAKER_SETUP.py
+│   │   ├── TWO_STAGE_QUICK_REFERENCE.md
+│   │   ├── __pycache__/
+│   │   │   ├── config_auto.cpython-310.pyc
+│   │   │   └── config_auto.cpython-312.pyc
+│   │   ├── analyze_results.py
+│   │   ├── config_auto.py
+│   │   ├── fix_dtype.sh
+│   │   ├── fix_submission.py
+│   │   ├── images/
+│   │   │   ├── IMAGE_PIPELINE_GUIDE.md
+│   │   │   ├── QUICK_REFERENCE.md
+│   │   │   ├── README_IMAGE_PIPELINE.md
+│   │   │   ├── VISUAL_GUIDE.md
+│   │   │   ├── download_images_efficient.py
+│   │   │   ├── ensemble_text_image.py
+│   │   │   ├── extract_image_features_efficient.py
+│   │   │   ├── run_image_pipeline_efficient.py
+│   │   │   └── train_image_model_efficient.py
+│   │   ├── outputs/
+│   │   │   ├── phase1_execution_results.json
+│   │   │   └── phase1_log_transform/
+│   │   ├── phase1_quick_wins/
+│   │   │   ├── 01_log_transform_ensemble.py
+│   │   │   ├── 02_unit_standardization.py
+│   │   │   ├── 03_advanced_features.py
+│   │   │   └── run_phase1.py
+│   │   ├── status_tracker.py
+│   │   ├── train_balanced_model.py
+│   │   ├── train_distilbert_huber.py
+│   │   ├── train_final_model.py
+│   │   ├── train_robust_model.py
+│   │   ├── train_two_stage_model.py
+│   │   └── train_two_stage_v2_optimized.py
+│   ├── outputs/
+│   │   ├── balanced_model/
+│   │   │   ├── oof_predictions.csv
+│   │   │   ├── results.json
+│   │   │   ├── submission.csv
+│   │   │   └── submission_raw.csv
+│   │   ├── distilbert_huber/
+│   │   │   ├── best_model_fold1.pt
+│   │   │   ├── best_model_fold2.pt
+│   │   │   ├── best_model_fold3.pt
+│   │   │   ├── best_model_fold4.pt
+│   │   │   ├── best_model_fold5.pt
+│   │   │   ├── oof_predictions.csv
+│   │   │   └── test_predictions.csv
+│   │   ├── ensemble_text_image/
+│   │   │   ├── oof_predictions.csv
+│   │   │   ├── submission.csv
+│   │   │   └── test_predictions_detailed.csv
+│   │   ├── final_model/
+│   │   │   ├── embeddings_cache/
+│   │   │   │   ├── test_embeddings.npy
+│   │   │   │   └── train_embeddings.npy
+│   │   │   ├── fold_cache/
+│   │   │   │   ├── fold_1_oof.npy
+│   │   │   │   ├── fold_1_score.txt
+│   │   │   │   ├── fold_1_test.npy
+│   │   │   │   ├── fold_2_oof.npy
+│   │   │   │   ├── fold_2_score.txt
+│   │   │   │   ├── fold_2_test.npy
+│   │   │   │   ├── fold_3_oof.npy
+│   │   │   │   ├── fold_3_score.txt
+│   │   │   │   ├── fold_3_test.npy
+│   │   │   │   ├── fold_4_oof.npy
+│   │   │   │   ├── fold_4_score.txt
+│   │   │   │   ├── fold_4_test.npy
+│   │   │   │   ├── fold_5_oof.npy
+│   │   │   │   ├── fold_5_score.txt
+│   │   │   │   └── fold_5_test.npy
+│   │   │   ├── oof_predictions.csv
+│   │   │   ├── oof_predictions_fixed.csv
+│   │   │   ├── results.json
+│   │   │   ├── submission.csv
+│   │   │   └── submission_fixed.csv
+│   │   ├── image_features/
+│   │   │   ├── test_image_features.npz
+│   │   │   ├── test_image_features_final.npz
+│   │   │   ├── train_image_features.npz
+│   │   │   └── train_image_features_final.npz
+│   │   ├── image_model/
+│   │   │   ├── oof_predictions.csv
+│   │   │   ├── predictions.npz
+│   │   │   └── test_predictions.csv
+│   │   ├── phase1_advanced_features/
+│   │   │   ├── feature_info.json
+│   │   │   ├── integration_guide.txt
+│   │   │   ├── test_with_advanced_features.csv
+│   │   │   └── train_with_advanced_features.csv
+│   │   ├── phase1_log_transform/
+│   │   │   ├── config.json
+│   │   │   ├── create_submission.py
+│   │   │   ├── ensemble_strategy.py
+│   │   │   └── training_template.py
+│   │   ├── phase1_unit_standardization/
+│   │   │   ├── integration_guide.txt
+│   │   │   ├── test_with_units.csv
+│   │   │   ├── train_with_units.csv
+│   │   │   └── unit_mappings.json
+│   │   ├── robust_model/
+│   │   │   ├── oof_predictions.csv
+│   │   │   ├── results.json
+│   │   │   └── submission.csv
+│   │   └── two_stage_v2_optimized/
+│   │       ├── best_model_fold1.pt
+│   │       ├── best_model_fold2.pt
+│   │       ├── best_model_fold3.pt
+│   │       ├── best_model_fold4.pt
+│   │       └── best_model_fold5.pt
+│   └── research/
+│       ├── 01_comprehensive_data_analysis.py
+│       ├── 02_image_analysis.py
+│       ├── 03_error_analysis.py
+│       ├── outputs/
+│       │   ├── 01_price_distribution.png
+│       │   ├── 02_unit_price_distribution.png
+│       │   ├── 03_brand_analysis.png
+│       │   ├── 04_category_analysis.png
+│       │   ├── 05_image_visual_analysis.png
+│       │   ├── 06_montage_Budget_0_10.png
+│       │   ├── 06_montage_Economy_10_20.png
+│       │   ├── 06_montage_Luxury_100+.png
+│       │   ├── 06_montage_Mid_Range_20_50.png
+│       │   ├── 06_montage_Premium_50_100.png
+│       │   ├── 07_error_analysis_by_range.png
+│       │   ├── 08_error_analysis_by_unit.png
+│       │   ├── difficult_samples_top50.csv
+│       │   ├── error_analysis_by_range.csv
+│       │   ├── error_analysis_by_unit.csv
+│       │   ├── image_analysis_results.csv
+│       │   ├── image_analysis_summary.txt
+│       │   ├── research_summary.txt
+│       │   ├── research_train_enriched.csv
+│       │   └── validation_with_errors.csv
+│       └── run_all_research.py
+└── try4/
+    ├── ARCHITECTURE.md
+    ├── COMPARISON.md
+    ├── CROSS_ACCOUNT_GUIDE.md
+    ├── IMPLEMENTATION_SUMMARY.md
+    ├── IMPORT_FIX.md
+    ├── INDEX.md
+    ├── INSTALL_CLIP.md
+    ├── QUICK_START.md
+    ├── README.md
+    ├── TRANSFER_LARGE_FILES.md
+    ├── analyze_features.py
+    ├── check_system.py
+    ├── config/
+    │   ├── __init__.py
+    │   ├── __pycache__/
+    │   │   ├── __init__.cpython-310.pyc
+    │   │   └── config.cpython-310.pyc
+    │   └── config.py
+    ├── download_from_gdrive.sh
+    ├── feature_extraction/
+    │   ├── __init__.py
+    │   ├── clip_embeddings.py
+    │   ├── deberta_embeddings.py
+    │   └── tabular_features.py
+    ├── fix_imports.py
+    ├── install.sh
+    ├── main_pipeline.py
+    ├── modeling/
+    │   ├── __init__.py
+    │   └── fusion_model.py
+    ├── one_command_setup.sh*
+    ├── outputs/
+    │   ├── analysis/
+    │   ├── embeddings/
+    │   ├── features/
+    │   ├── models/
+    │   └── predictions/
+    ├── preprocessing/
+    │   ├── __init__.py
+    │   ├── outlier_detection.py
+    │   └── outlier_treatment.py
+    ├── requirements.txt
+    └── upload_to_gdrive.sh
+
+74 directories, 150313 files
