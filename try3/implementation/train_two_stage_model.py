@@ -281,7 +281,7 @@ class TwoStageModel(nn.Module):
             # Reconstruct full prediction tensor (match dtype for FP16 compatibility)
             batch_preds = torch.zeros(len(price_class), device=cls_output.device, dtype=cls_output.dtype)
             for mask, pred in regression_preds:
-                batch_preds[mask] = pred
+                batch_preds[mask] = pred.to(dtype=batch_preds.dtype)
             
             return class_logits, batch_preds
         
@@ -294,7 +294,8 @@ class TwoStageModel(nn.Module):
             for i in range(self.n_ranges):
                 mask = (pred_class == i)
                 if mask.any():
-                    batch_preds[mask] = self.regression_heads[i](cls_output[mask]).squeeze(-1)
+                    head_output = self.regression_heads[i](cls_output[mask]).squeeze(-1)
+                    batch_preds[mask] = head_output.to(dtype=batch_preds.dtype)
             
             return class_logits, batch_preds
 
