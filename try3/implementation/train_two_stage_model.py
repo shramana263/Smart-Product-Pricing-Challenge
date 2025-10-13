@@ -484,11 +484,64 @@ def main():
     oof_predictions = np.zeros(len(train_df))
     fold_scores = []
     
+    # Check for existing trained folds
+    existing_folds = []
+    for fold in range(1, CONFIG['n_folds'] + 1):
+        if (CONFIG['output_dir'] / f'best_model_fold{fold}.pt').exists():
+            existing_folds.append(fold)
+    
     print("\n🚀 Starting cross-validation...")
     print("="*80)
     
+    if existing_folds:
+        print(f"\n💾 Found existing trained folds: {existing_folds}")
+        print(f"✅ Will resume from Fold {max(existing_folds) + 1}")
+        print("="*80)
+    
     for fold, (train_idx, val_idx) in enumerate(skf.split(train_df, train_df['price_range']), 1):
-        print(f"\n📊 Fold {fold}/{CONFIG['n_folds']}")
+        
+        # Check if fold already trained
+        fold_model_path = CONFIG['output_dir'] / f'best_model_fold{fold}.pt'
+        if fold_model_path.exists():
+            print(f"\n✅ Fold {fold}/{CONFIG['n_folds']} - Already trained! Loading existing model...")
+            print("-"*80)
+            
+            # Load model and evaluate to get OOF predictions
+            val_fold = train_df.iloc[val_idx]
+            
+            val_dataset = TwoStageDataset(
+                val_fold['catalog_content'].values,
+                val_fold['price'].values,
+                tokenizer,
+                CONFIG['max_length']
+            )
+            
+            val_loader = DataLoader(
+                val_dataset,
+                batch_size=CONFIG['batch_size'] * 2,
+                shuffle=False,
+                num_workers=2,
+                pin_memory=True
+            )
+            
+            # Load model
+            model = TwoStageModel(CONFIG['model_name'], len(CONFIG['price_ranges']))
+            model.load_state_dict(torch.load(fold_model_path))
+            model = model.to(CONFIG['device'])
+            
+            # Get predictions
+            fold_smape, fold_class_acc, fold_preds, _ = evaluate(
+                model, val_loader, class_criterion, reg_criteria, CONFIG['device']
+            )
+            
+            print(f"✓ Loaded Fold {fold} SMAPE: {fold_smape:.3f}% (Class Acc: {fold_class_acc:.2f}%)")
+            
+            oof_predictions[val_idx] = fold_preds
+            fold_scores.append(fold_smape)
+            
+            continue  # Skip to next fold
+        
+        print(f"\n📊 Fold {fold}/{CONFIG['n_folds']} - Training...")
         print("-"*80)
         
         train_fold = train_df.iloc[train_idx]

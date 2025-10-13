@@ -1,0 +1,36 @@
+# Core ML Libraries
+torch>=2.0.0
+transformers>=4.35.0
+scikit-learn>=1.3.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Boosting Libraries
+lightgbm>=4.0.0
+catboost>=1.2.0
+xgboost>=2.0.0
+
+# Image Processing
+Pillow>=10.0.0
+opencv-python>=4.8.0
+clip-by-openai
+
+# Vision Models
+timm>=0.9.0
+
+# Utilities
+tqdm>=4.65.0
+requests>=2.31.0
+joblib>=1.3.0
+pyyaml>=6.0
+
+# Outlier Detection
+pyod>=1.1.0
+
+# Visualization (optional)
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.17.0
+
+# GPU Acceleration (optional)
+# torch>=2.0.0+cu118 -f https://download.pytorch.org/whl/torch_stable.html
