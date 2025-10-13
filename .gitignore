@@ -38,7 +38,11 @@ try3/outputs/phase1_unit_standardization/test_with_units.csv
 try3/outputs/phase1_unit_standardization/train_with_units.csv
 try3/outputs/image_model/
 try3/outputs/image_features/
-
+try3/outputs/distilbert_huber/best_model_fold1.pt
+try3/outputs/distilbert_huber/best_model_fold2.pt
+try3/outputs/distilbert_huber/best_model_fold3.pt
+try3/outputs/distilbert_huber/best_model_fold4.pt
+try3/outputs/distilbert_huber/best_model_fold5.pt
 # TensorBoard logs
 runs/
 logs/
