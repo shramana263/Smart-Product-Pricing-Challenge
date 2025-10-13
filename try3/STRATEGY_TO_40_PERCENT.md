@@ -1,10 +1,11 @@
 # 🎯 Strategy to Achieve <40% SMAPE
 
 **Current Status:**
-- Pure DistilBERT Fine-tuned: **53.636%** ✅ (Best so far)
+- ✅ **DistilBERT + Huber Loss: 47.378%** (BEST! -6.258 points improvement!)
+- ✅ Pure DistilBERT Fine-tuned: 53.636% (previous best)
 - Text + Image Ensemble: 59.708%
-- Target: **<40% SMAPE**
-- Gap to close: **~14 points**
+- **Target: <40% SMAPE**
+- **Gap to close: ~7.4 points** (was 14, now 7.4!)
 
 ---
 
@@ -124,9 +125,9 @@ Current fine-tuned DistilBERT:
 
 ## 🔧 Implementation Plan
 
-### **Phase 1: Outlier-Robust Loss Functions (Week 1)**
+### **Phase 1: Outlier-Robust Loss Functions (Week 1)** ✅ COMPLETE!
 
-**1.1 Huber Loss for DistilBERT**
+**1.1 Huber Loss for DistilBERT** ✅ IMPLEMENTED!
 ```python
 import torch.nn as nn
 
@@ -148,7 +149,7 @@ class HuberLoss(nn.Module):
 - Linear for large errors (> δ) → robust to outliers
 - Reduces penalty on $20→$500 predictions
 
-**Expected Improvement:** 53.6% → 49-50% SMAPE
+**✅ Result:** 53.6% → **47.378% SMAPE** (Better than expected! Predicted 49-50%)
 
 ---
 
