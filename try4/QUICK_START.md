@@ -1,5 +1,20 @@
 # 🚀 Try4 Quick Start Guide
 
+## ⚠️ IMPORTANT: Fix Import Errors First!
+
+If you see `ModuleNotFoundError: No module named 'config'`, run:
+```bash
+cd ~/Smart-Product-Pricing-Challenge/try4
+python fix_imports.py
+```
+
+If you see `tiktoken` or `protobuf` errors:
+```bash
+pip install tiktoken protobuf sentencepiece
+```
+
+---
+
 ## Overview
 
 This is an advanced multi-modal fusion system combining:

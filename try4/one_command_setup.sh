@@ -83,6 +83,11 @@ chmod +x install.sh
 ./install.sh
 
 echo ""
+echo "Installing tokenizer dependencies..."
+pip install tiktoken protobuf sentencepiece --quiet
+echo "✅ Tokenizer dependencies installed"
+
+echo ""
 echo "Fixing Python import structure..."
 python fix_imports.py
 

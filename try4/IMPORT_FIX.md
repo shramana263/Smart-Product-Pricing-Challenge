@@ -1,20 +1,33 @@
-# ModuleNotFoundError: No module named 'config' - FIXED ✅
+# ModuleNotFoundError & Dependency Errors - FIXED ✅
 
-## Problem
+## Problems
 
+### Issue 1: ModuleNotFoundError: No module named 'config'
 When running `python main_pipeline.py`, all stages failed with:
 ```
 ModuleNotFoundError: No module named 'config'
 ```
 
-## Root Cause
+### Issue 2: Missing Tokenizer Dependencies
+DeBERTa tokenizer failed with:
+```
+ModuleNotFoundError: No module named 'tiktoken'
+ImportError: requires the protobuf library but it was not found
+```
 
-Python couldn't find the `config` module because:
+## Root Causes
+
+### Config Import Issue:
 1. Missing `__init__.py` files in subdirectories (config/, feature_extraction/, preprocessing/, modeling/)
 2. Subprocess scripts couldn't access parent directory imports
 3. PYTHONPATH not set for subprocess execution
 
-## Solution Applied
+### Tokenizer Dependencies Issue:
+1. `tiktoken` - Required for modern tokenizer conversion
+2. `protobuf` - Required for SentencePiece tokenizer
+3. `sentencepiece` - Required for DeBERTa-v3-large tokenizer
+
+## Solutions Applied
 
 ### 1. Created `__init__.py` Files
 Added `__init__.py` to make directories proper Python packages:
@@ -36,32 +49,42 @@ result = subprocess.run(
 )
 ```
 
-### 3. Created fix_imports.py
-Automated script to ensure all `__init__.py` files exist:
-```bash
-python fix_imports.py
+### 3. Added Missing Dependencies to requirements.txt
+```txt
+# Tokenizer Dependencies (Required for DeBERTa)
+tiktoken>=0.5.0
+protobuf>=3.20.0
+sentencepiece>=0.1.99
 ```
 
-## How to Fix (If You See This Error)
+### 4. Created Automated Fix Scripts
+- `fix_imports.py` - Ensures all `__init__.py` files exist
+- `fix_all.sh` - Complete fix including dependencies
 
-### Quick Fix (On SageMaker):
+## How to Fix (If You See These Errors)
+
+### Quick Fix (ONE COMMAND):
 ```bash
 cd ~/Smart-Product-Pricing-Challenge/try4
-python fix_imports.py
-python main_pipeline.py
+chmod +x fix_all.sh
+./fix_all.sh
 ```
 
-### Manual Fix (If git pull doesn't work):
+### Manual Fix (Step by Step):
 ```bash
 cd ~/Smart-Product-Pricing-Challenge/try4
 
-# Create __init__.py files
-touch config/__init__.py
-touch feature_extraction/__init__.py
-touch preprocessing/__init__.py
-touch modeling/__init__.py
+# Step 1: Fix imports
+python fix_imports.py
 
-# Run pipeline
+# Step 2: Install missing dependencies
+pip install tiktoken protobuf sentencepiece
+
+# Step 3: Verify
+python -c "from config.config import DATA_DIR; print('✅ Imports working!')"
+python -c "import tiktoken, google.protobuf, sentencepiece; print('✅ Dependencies installed!')"
+
+# Step 4: Run pipeline
 python main_pipeline.py
 ```
 
