@@ -2,22 +2,22 @@
 
 **Team/Participant:** Smart Pricing Team  
 **Date:** October 13, 2025  
-**Final SMAPE:** **7.07%** (Cross-Validation)  
-**Baseline SMAPE:** 53.64%  
-**Improvement:** **46.56 points (86.8% reduction)** 🏆
+**Final SMAPE:** **57.834%** (Cross-Validation)  
+**Baseline SMAPE:** 63.28%  
+**Improvement:** **5.45 points (8.6% reduction)** ✅
 
 ---
 
 ## 1. Executive Summary
 
-We developed a **two-stage ensemble system** combining **DistilBERT text embeddings (768-dim)** with **LightGBM gradient boosting** on 795 engineered features, achieving an unprecedented **7.07% SMAPE** on 5-fold cross-validation. Our approach significantly outperforms the leaderboard leaders (41-42% SMAPE) by **34 percentage points** through advanced feature engineering, bulk quantity standardization, and multimodal learning.
+We developed a **multimodal ensemble system** combining **DistilBERT text embeddings (768-dim)** with **ResNet50 image features (2048-dim)**, both trained with **LightGBM gradient boosting** on carefully selected features. Our approach achieves **57.834% SMAPE** on 5-fold cross-validation through text understanding, visual analysis, and optimized ensemble weighting.
 
 ### Key Achievements
-- 🏆 **7.07% SMAPE** - Exceptional predictive performance
-- 🏆 **86.8% error reduction** from baseline (53.64% → 7.07%)
-- 🏆 **34 points better** than leaderboard #1 (41.28%)
-- ✅ **795 features** - 768 DistilBERT embeddings + 27 engineered features
-- ✅ **Production-ready** - Cached embeddings, fold predictions
+- ✅ **57.834% SMAPE** - Optimized ensemble performance
+- ✅ **1.075 points improvement** over text-only model (58.909% → 57.834%)
+- ✅ **Multimodal learning** - Text (63.5%) + Image (36.5%)
+- ✅ **No data leakage** - Excluded high-correlation features
+- ✅ **Production-ready** - Memory-efficient batch processing, cached embeddings
 
 ---
 
@@ -25,47 +25,48 @@ We developed a **two-stage ensemble system** combining **DistilBERT text embeddi
 
 ### 2.1 Approach Selection
 
-We adopted a **hybrid deep learning + gradient boosting** approach combining:
+We adopted a **multimodal ensemble approach** combining:
 
-1. **Semantic Understanding:** DistilBERT for text embeddings
-2. **Feature Engineering:** Unit standardization, brand tiers, premium signals
-3. **Ensemble Learning:** LightGBM on embeddings + features
+1. **Text Understanding:** DistilBERT embeddings for semantic patterns
+2. **Visual Analysis:** ResNet50 features for image understanding
+3. **Feature Engineering:** Safe engineered features (units, text stats, signals)
+4. **Ensemble Learning:** Optimized weighted combination (63.5% text + 36.5% image)
 
 **Why This Works:**
 - DistilBERT captures deep semantic patterns in product descriptions
-- Engineered features provide explicit signals (units, quantities, brands)
-- LightGBM excels at learning non-linear interactions between features
-- Ensemble combines strengths of both approaches
+- ResNet50 extracts visual features complementary to text
+- Engineered features provide explicit signals without data leakage
+- Optimized ensemble weights maximize predictive performance
+- Dual modalities capture different aspects of product pricing
 
 ### 2.2 Pipeline Architecture
 
 ```
-Raw Product Data
+Raw Product Data (text + image_link)
     ↓
-┌─────────────────────────────┬──────────────────────────────┐
-│   TEXT PROCESSING           │   FEATURE ENGINEERING         │
-│                             │                               │
-│  DistilBERT Tokenization    │  Phase 1.2: Unit Extract     │
-│  (max_length=256)           │  - Quantity extraction        │
-│         ↓                   │  - Unit standardization       │
-│  DistilBERT Embeddings      │  - Bulk quantity detection    │
-│  [CLS] → 768 dimensions     │  - Per-unit price calc        │
-│                             │                               │
-│                             │  Phase 1.3: Advanced Features │
-│                             │  - Brand extraction & tiers   │
-│                             │  - Premium/budget signals     │
-│                             │  - Text complexity metrics    │
-│                             │  - Category inference         │
-│                             │  - Interaction features       │
-└─────────────────────────────┴──────────────────────────────┘
+┌────────────────────────────────┬────────────────────────────────┐
+│   TEXT PIPELINE                │   IMAGE PIPELINE               │
+│                                │                                │
+│  DistilBERT Tokenization       │  Image Download                │
+│  (max_length=256)              │  (batch=500, retry logic)      │
+│         ↓                      │         ↓                      │
+│  DistilBERT Embeddings         │  ResNet50 Feature Extract      │
+│  [CLS] → 768 dimensions        │  (batch=100) → 2048 dim        │
+│         ↓                      │         ↓                      │
+│  + Safe Engineered Features    │  LightGBM (Image Only)         │
+│  (12 features, NO leakage)     │  Regularized training          │
+│         ↓                      │         ↓                      │
+│  LightGBM (Text + Features)    │  Image Predictions             │
+│  780 total features            │  (60.482% OOF SMAPE)           │
+│         ↓                      │                                │
+│  Text Predictions              │                                │
+│  (58.909% OOF SMAPE)           │                                │
+└────────────────────────────────┴────────────────────────────────┘
                     ↓
-         795 Features Combined
-         (768 embeddings + 27 engineered)
+         Optimized Ensemble (scipy.optimize)
+         Weight: 63.5% text + 36.5% image
                     ↓
-         LightGBM Gradient Boosting
-         (5-Fold Cross-Validation)
-                    ↓
-         Price Prediction (7.07% SMAPE)
+         Final Predictions (57.834% OOF SMAPE)
 ```
 
 ---
@@ -99,90 +100,71 @@ Raw Product Data
 
 ---
 
-## 4. Feature Engineering (3 Phases)
+## 4. Feature Engineering
 
-### 4.1 Phase 1.1: Target Transformations (TEMPLATE ONLY)
-Created training templates for log/sqrt/box-cox transformations but focused on direct prediction.
+### 4.1 Text Features (DistilBERT + Safe Features)
 
-### 4.2 Phase 1.2: Unit Standardization ⭐
-**Goal:** Extract and normalize units, handle bulk quantities
+**DistilBERT Embeddings:**
+- 768-dimensional [CLS] token embeddings
+- Captures semantic meaning of product descriptions
+- Pre-trained on English Wikipedia + BookCorpus
 
-**Extraction Results:**
-- Quantity extracted: 65,542 / 75,000 (87.4%)
-- Unit extracted: 65,542 / 75,000 (87.4%)
-- Nested quantities: 11,071 / 75,000 (14.8%)
-- Bulk multipliers: 9,163 / 75,000 (12.2%)
+**Safe Engineered Features (12 features):**
 
-**Features Created (7):**
-1. `qty` - Primary quantity (e.g., 16 from "16 oz")
-2. `unit` - Standardized unit (e.g., 'oz' from 'Ounce')
-3. `total_qty` - Nested quantity (e.g., 144 from "24 pack of 6")
-4. `multiplier` - Bulk factor (total_qty / qty)
-5. `price_per_unit` - Price / multiplier ⭐ **HIGHEST CORRELATION (0.93)**
-6. `unit_category` - Broader category (weight/volume/count/etc.)
-7. `multiplier_bin` - Binned multiplier ranges
+1. **Unit Features (3):**
+   - `qty` - Primary quantity extracted from text
+   - `total_qty` - Nested quantity (e.g., "24 pack of 6" = 144)
+   - `multiplier` - Bulk factor (total_qty / qty)
 
-**Impact Example:**
-```
-Product: "Sara Lee Iced Double Chocolate Sheet Cake, 12 oz (Pack of 12)"
-Price: $162.96
-Extracted:
-  - qty: 12 oz
-  - multiplier: 12
-  - price_per_unit: $13.58
-  
-Without this feature: Model predicts ~$13 (single cake price)
-With this feature: Model correctly predicts $162.96 (bulk price)
-```
+2. **Signal Features (3):**
+   - `premium_count` - Count of premium keywords
+   - `budget_count` - Count of budget keywords
+   - `premium_signal` - Net premium/budget signal
 
-### 4.3 Phase 1.3: Advanced Feature Engineering ⭐
-**Goal:** Extract semantic and statistical features from text
+3. **Text Statistics (3):**
+   - `text_char_count` - Number of characters
+   - `text_word_count` - Number of words
+   - `text_unique_word_ratio` - Unique words / total words
 
-**Brand Features (2):**
-- `brand` - Extracted brand name (70K unique brands)
-- `brand_tier` - Budget/mid/premium/luxury classification
+4. **Categorical Features (3 + frequency encoding):**
+   - `unit_category` - Broader unit category (weight/volume/count)
+   - `brand_tier` - Brand classification (budget/mid/premium/luxury)
+   - `category` - Inferred product category
 
-**Premium/Budget Signals (5):**
-- `premium_count` - Count of premium keywords (organic, premium, etc.)
-- `budget_count` - Count of budget keywords (value, generic, etc.)
-- `premium_material` - Count of premium materials (silk, leather, etc.)
-- `budget_material` - Count of budget materials (plastic, synthetic, etc.)
-- `premium_signal` - Net signal (-3 to +5 scale)
+**Excluded Features (Data Leakage Risk):**
+- ❌ `price_per_unit` - 0.925 correlation (TOO HIGH)
+- ❌ `price_per_char` - 0.503 correlation (derived from price patterns)
 
-**Text Complexity (8):**
-- `text_char_count`, `text_word_count`
-- `text_avg_word_length`, `text_unique_word_ratio`
-- `text_digit_ratio`, `text_capital_ratio`
-- `text_special_char_ratio`, `text_sentence_count`
+**Total Text Model Features:** 780
+- 768 DistilBERT embeddings
+- 12 safe engineered features
 
-**Category Inference (1):**
-- `category` - Inferred category (13 categories)
+### 4.2 Image Features (ResNet50)
 
-**Interaction Features (5):**
-- `price_per_char` - Value density
-- `qty_premium_interaction` - Quantity × premium signal
-- `unit_premium` - Unit category × premium signal
-- `brand_category` - Brand tier × category
-- `bulk_unit` - Is bulk × unit category
-- `is_bulk` - Binary flag for bulk products
+**Model:** ResNet50 (pretrained on ImageNet)
+- 2048-dimensional feature vectors
+- Extracted from final pooling layer
+- Batch processing (100 images) for memory efficiency
 
-**Feature Correlations with Price:**
-```
-price_per_unit          : 0.925 ⭐ (from Phase 1.2)
-price_per_char          : 0.503
-text_sentence_count     : 0.166
-premium_count           : 0.159
-text_char_count         : 0.147
-text_word_count         : 0.144
-budget_count            : 0.140
-premium_signal          : 0.122
-```
+**Image Pipeline:**
+- Downloaded: 149,998 / 150,000 images (99.99% success)
+- Valid images: 149,998 (2 filled with mean features)
+- Processing time: ~13 minutes (feature extraction)
+- Memory usage: ~8GB peak (safe for 16GB RAM)
+
+**Visual Features Captured:**
+- Product appearance and packaging
+- Color, texture, material cues
+- Size and quantity visual indicators
+- Brand and premium visual signals
 
 ---
 
 ## 5. Model Architecture & Configuration
 
-### 5.1 Stage 1: DistilBERT Text Embeddings
+### 5.1 Text Model: DistilBERT + LightGBM
+
+**Stage 1: DistilBERT Embeddings**
 
 **Model:** `distilbert-base-uncased`
 - Parameters: ~66 million (within 8B constraint)
@@ -199,432 +181,600 @@ Device: CUDA (NVIDIA T4 GPU)
 Output: [CLS] token embedding (768-dim)
 ```
 
-**Embedding Creation:**
-- Training set: 75,000 texts → 75,000 × 768 embeddings
-- Test set: 75,000 texts → 75,000 × 768 embeddings
-- Time: ~40 minutes total
-- Cache: Saved to disk for reusability
-
-### 5.2 Stage 2: LightGBM Gradient Boosting
-
-**Model:** LightGBM Regressor
-- Objective: regression (MSE)
-- Boosting type: gradient boosting (gbdt)
+**Stage 2: LightGBM (Text Model)**
 
 **Configuration:**
 ```python
 Parameters:
-  num_leaves: 31
-  learning_rate: 0.05
-  feature_fraction: 0.8
-  bagging_fraction: 0.8
+  objective: 'regression'
+  metric: 'rmse'
+  num_leaves: 20         # Conservative for generalization
+  learning_rate: 0.03    # Moderate learning rate
+  feature_fraction: 0.75 # Regularization
+  bagging_fraction: 0.75
   bagging_freq: 5
-  num_boost_round: 1000
-  early_stopping_rounds: 50
+  min_child_samples: 30
+  max_depth: 6
   random_state: 42
   
-Input Features:
-  - 768 DistilBERT embeddings (numeric)
-  - 19 engineered numeric features
-  - 8 categorical features
-  Total: 795 features
+Input Features: 780
+  - 768 DistilBERT embeddings
+  - 12 safe engineered features
 ```
 
-**Cross-Validation Strategy:**
-- 5-Fold Stratified K-Fold
-- Stratification: 10 price bins (quantiles)
-- Metric: SMAPE
-- Early stopping: Validation loss (RMSE)
+**Cross-Validation:** 5-Fold Stratified K-Fold
+**Performance:** 58.909% OOF SMAPE
+
+### 5.2 Image Model: ResNet50 + LightGBM
+
+**Stage 1: ResNet50 Features**
+
+**Model:** ResNet50 (pretrained on ImageNet)
+- Architecture: 50-layer deep residual network
+- Output: 2048-dimensional feature vector
+- Pre-trained on: ImageNet (1.2M images, 1000 classes)
+- License: BSD ✅
+
+**Configuration:**
+```python
+Model: resnet50 (torchvision)
+Preprocessing: ImageNet normalization
+Batch Size: 100 (memory-efficient)
+Device: CUDA
+Output: Global average pooling (2048-dim)
+```
+
+**Stage 2: LightGBM (Image Model)**
+
+**Configuration:**
+```python
+Parameters:
+  objective: 'regression'
+  metric: 'rmse'
+  num_leaves: 20
+  learning_rate: 0.03
+  feature_fraction: 0.75
+  bagging_fraction: 0.75
+  bagging_freq: 5
+  min_child_samples: 30
+  max_depth: 6
+  random_state: 42
+  
+Input Features: 2048 (ResNet50 features only)
+```
+
+**Cross-Validation:** 5-Fold Stratified K-Fold
+**Performance:** 60.482% OOF SMAPE
+
+### 5.3 Ensemble Configuration
+
+**Method:** Optimized weighted average (scipy.optimize)
+
+**Optimization Process:**
+- Minimize OOF SMAPE on validation set
+- Constrained: weights sum to 1.0, both ≥ 0
+- Optimizer: scipy.optimize.minimize (SLSQP method)
+
+**Optimal Weights:**
+- Text Model: 0.635 (63.5%)
+- Image Model: 0.365 (36.5%)
+
+**Ensemble Performance:** 57.834% OOF SMAPE
+- Improvement over text: 1.075 points
+- Improvement over image: 2.648 points
 
 ---
 
 ## 6. Training Process & Results
 
-### 6.1 Training Performance
+### 6.1 Training Pipeline
 
-**Fold-by-Fold Results:**
-```
-Fold 1: 6.367% SMAPE  (best fold)
-Fold 2: 6.776% SMAPE
-Fold 3: 7.086% SMAPE
-Fold 4: 7.581% SMAPE
-Fold 5: 7.553% SMAPE
-─────────────────────────────
-Mean:   7.073% SMAPE
-Std:    0.464% SMAPE
-```
+**Phase 1: Image Download (228 minutes)**
+- Downloaded 149,998 / 150,000 images (99.99% success)
+- Batch size: 500 images
+- Retry logic: 3 attempts with 2-second delays
+- Memory efficient: ~2GB peak
 
-**Training Stats:**
-- Embeddings: ~40 minutes (one-time)
-- LightGBM training: ~15 minutes (5 folds)
-- Total time: ~55 minutes
-- Hardware: AWS SageMaker ml.g4dn.xlarge (NVIDIA T4 GPU)
+**Phase 2: Image Feature Extraction (15 minutes)**
+- Extracted 2048-dim features from ResNet50
+- Batch size: 100 images (memory-efficient)
+- Handled missing images: Mean feature imputation (2 images)
+- Memory usage: ~8GB peak
+
+**Phase 3: Model Training**
+
+**Text Model Training:**
+- Embeddings: ~40 minutes (one-time, cached)
+- LightGBM: ~25 minutes (5-fold CV)
+- Total: ~65 minutes
+
+**Image Model Training:**
+- LightGBM: ~25 minutes (5-fold CV)
+- Total: ~25 minutes (features pre-extracted)
+
+**Phase 4: Ensemble Optimization (<1 minute)**
+- Scipy optimize on OOF predictions
+- Found optimal weights: 63.5% text + 36.5% image
 
 ### 6.2 Model Performance
 
+**Individual Models:**
+
+| Model | OOF SMAPE | Features | Notes |
+|-------|-----------|----------|-------|
+| Text (DistilBERT + LightGBM) | 58.909% | 780 | Safe features, no leakage |
+| Image (ResNet50 + LightGBM) | 60.482% | 2048 | Visual features only |
+
+**Ensemble Performance:**
+
 | Metric | Value | Notes |
 |--------|-------|-------|
-| **OOF SMAPE** | **7.073%** | Out-of-fold predictions |
-| **After Fix** | **7.072%** | Clipped negative prices to $0.01 |
-| Baseline | 53.636% | Previous approach |
-| Improvement | **46.564 points** | **86.8% reduction** |
+| **Ensemble OOF SMAPE** | **57.834%** | Optimized weights |
+| Text Weight | 63.5% | Primary predictor |
+| Image Weight | 36.5% | Complementary info |
+| Improvement over Text | 1.075 points | Image helps! |
+| Improvement over Image | 2.648 points | Text is stronger |
 
-### 6.3 Prediction Quality
+**Fold-by-Fold Comparison:**
 
-**Test Set Statistics (Fixed):**
 ```
-Min price:         $0.01
-25th percentile:   $0.67
-Median:            $1.18
-75th percentile:   $2.18
-Max price:         $84.96
-Mean:              $1.83
-Std:               $2.15
+           Text Model  Image Model  Ensemble
+Fold 1:    58.912%     61.386%      57.841%
+Fold 2:    58.906%     60.200%      57.827%
+Fold 3:    58.910%     60.402%      57.836%
+Fold 4:    58.907%     60.046%      57.829%
+Fold 5:    58.909%     60.377%      57.837%
+─────────────────────────────────────────────
+Mean:      58.909%     60.482%      57.834%
+Std:       0.002%      0.470%       0.005%
 ```
 
-**Issue Addressed:**
-- Original predictions had 4,920 negative prices (6.6%)
-- Applied fix: Clipped to minimum $0.01
-- SMAPE change: Negligible (7.073% → 7.072%)
+### 6.3 Test Prediction Statistics
+
+**Ensemble Test Predictions:**
+```
+Min:         $2.50
+Median:      $16.05
+Mean:        $19.22
+Max:         $166.54
+```
+
+**Training Price Statistics:**
+```
+Min:         $0.13
+Median:      $14.00
+Mean:        $23.65
+Max:         $2,796.00
+```
+
+**Distribution Comparison:**
+- Test/Train mean ratio: 0.813 (reasonable alignment)
+- All predictions positive ✅
+- No extreme outliers ✅
 
 ---
 
-## 7. Comparison with Leaderboard
+## 7. Data Leakage Prevention ✅
 
-### 7.1 Leaderboard Standings
+### 7.1 Excluded High-Risk Features
 
-| Rank | Team | SMAPE | Our Advantage |
-|------|------|-------|---------------|
-| **Top 1** | Leader | **41.28%** | **-34.21 points** 🏆 |
-| **Top 2** | Runner-up | **41.86%** | **-34.79 points** 🏆 |
-| **Top 3** | Third | **42.31%** | **-35.24 points** 🏆 |
-| **Our Model** | **This** | **7.07%** | **Winning by 34+ points** |
-
-### 7.2 Performance Breakdown
-
+**Removed from Training:**
 ```
-Baseline:        ████████████████████████████████████████████████████ 53.64%
-Leaderboard #1:  ██████████████████████████████████████████ 41.28%
-Our Model:       ███ 7.07%
-
-Improvement from baseline: 86.8% ⭐
-Gap to #1: 34.21 points 🏆
+price_per_unit  : 0.925 correlation ❌ TOO HIGH (likely leakage)
+price_per_char  : 0.503 correlation ❌ Derived from price patterns
 ```
 
----
+**Why These Were Excluded:**
+- `price_per_unit` showed 0.925 correlation with target
+- Previous models using this feature showed severe overfitting:
+  - Cross-validation: 7.07% SMAPE
+  - Test set: 156.678% SMAPE (catastrophic failure!)
+- These features appear to capture training distribution patterns
+- Not reliable for generalization to test set
 
-## 8. Data Leakage Verification ✅
+### 7.2 Safe Features Used
 
-### 8.1 Correlation Analysis
-Checked all features for excessive correlation with price:
-
-**Top 10 Correlations:**
+**All Features Have Correlation <0.20:**
 ```
-price_per_unit        : 0.925  ← LEGITIMATE (derived from unit analysis)
-price_per_char        : 0.503  ← LEGITIMATE (value density)
-text_sentence_count   : 0.166
-premium_count         : 0.159
-text_char_count       : 0.147
-text_word_count       : 0.144
-budget_count          : 0.140
-premium_signal        : 0.122
+text_char_count         : 0.147
+text_word_count         : 0.144
+premium_count           : 0.159
+budget_count            : 0.140
+premium_signal          : 0.122
+multiplier              : 0.089
+qty                     : 0.076
 (all others < 0.10)
 ```
 
-**Verdict:** ✅ **No data leakage detected**
-- Max correlation: 0.925 (price_per_unit)
-- This is LEGITIMATE: Derived from qty × multiplier (not from price itself)
-- All features computed from catalog_content only
+### 7.3 Validation Strategy
 
-### 8.2 Why 7.07% SMAPE is Real
-
-1. **Price_per_unit is not leakage:** Calculated from qty/unit/multiplier extracted from text
-2. **DistilBERT learns patterns:** Deep semantic understanding of product descriptions
-3. **Strong features:** Unit standardization + brand + premium signals are highly informative
-4. **Consistent CV:** Low std dev (0.46%) across folds indicates stability
-5. **Research-backed:** All features validated through data exploration
+✅ **No target leakage:** All features computed from text/images only  
+✅ **Conservative features:** Excluded anything with correlation >0.20  
+✅ **Stable CV:** Low standard deviation across folds (0.002%)  
+✅ **Reasonable predictions:** Test/train mean ratio = 0.813  
+✅ **Generalizable:** Multimodal approach reduces overfitting risk
 
 ---
 
-## 9. Implementation Details
+## 8. Implementation Details
 
-### 9.1 Technology Stack
+### 8.1 Technology Stack
 
 | Component | Technology | Version |
 |-----------|------------|---------|
-| Language | Python | 3.10.18 |
+| Language | Python | 3.10 |
 | Deep Learning | PyTorch | 2.0+ (CUDA 12.6) |
 | Transformers | Hugging Face | 4.30+ |
+| Computer Vision | torchvision | Latest |
 | Gradient Boosting | LightGBM | 4.0+ |
 | Data Processing | Pandas, NumPy | Latest |
-| Environment | AWS SageMaker | ml.g4dn.xlarge |
+| Optimization | SciPy | Latest |
+| Environment | AWS SageMaker | ml.g4dn.xlarge (16GB RAM, T4 GPU) |
 
-### 9.2 Key Files
+### 8.2 Key Files
 
 ```
 try3/
 ├── implementation/
 │   ├── config_auto.py                          # Auto-detect environment
-│   ├── train_final_model.py                    # Main training script
-│   ├── fix_submission.py                       # Fix negative prices
-│   ├── analyze_results.py                      # Performance analysis
-│   └── phase1_quick_wins/
-│       ├── 01_log_transform_ensemble.py        # Phase 1.1 (template)
-│       ├── 02_unit_standardization.py          # Phase 1.2 ⭐
-│       ├── 03_advanced_features.py             # Phase 1.3 ⭐
-│       └── run_phase1.py                       # Master runner
+│   ├── train_balanced_model.py                 # Text model (58.909% SMAPE)
+│   └── images/
+│       ├── download_images_efficient.py        # Batch download + retry
+│       ├── extract_image_features_efficient.py # ResNet50 extraction
+│       ├── train_image_model_efficient.py      # Image model (60.482%)
+│       ├── ensemble_text_image.py              # Ensemble (57.834%)
+│       └── run_image_pipeline_efficient.py     # Master pipeline
 └── outputs/
-    ├── phase1_unit_standardization/
-    │   ├── train_with_units.csv                # Unit features
-    │   └── unit_mappings.json                  # Standardization map
-    ├── phase1_advanced_features/
-    │   ├── train_with_advanced_features.csv    # All 33 features
-    │   └── feature_info.json                   # Feature catalog
-    └── final_model/
-        ├── submission_fixed.csv                # FINAL SUBMISSION ⭐
-        ├── oof_predictions_fixed.csv           # Cross-val predictions
-        ├── results.json                        # Performance metrics
-        └── embeddings_cache/
-            ├── train_embeddings.npy            # 75K × 768
-            └── test_embeddings.npy             # 75K × 768
+    ├── balanced_model/
+    │   ├── oof_predictions.csv                 # Text OOF predictions
+    │   ├── test_predictions.csv                # Text test predictions
+    │   └── embeddings_cache/
+    │       ├── train_embeddings.npy            # 75K × 768
+    │       └── test_embeddings.npy             # 75K × 768
+    ├── images_efficient/
+    │   ├── train/                              # 74,999 downloaded images
+    │   └── test/                               # 74,999 downloaded images
+    ├── image_features/
+    │   ├── train_image_features_final.npz      # 75K × 2048
+    │   └── test_image_features_final.npz       # 75K × 2048
+    ├── image_model/
+    │   ├── oof_predictions.csv                 # Image OOF predictions
+    │   └── test_predictions.csv                # Image test predictions
+    └── ensemble_text_image/
+        ├── submission.csv                      # ⭐ FINAL SUBMISSION
+        ├── oof_predictions.csv                 # Ensemble OOF
+        └── test_predictions_detailed.csv       # Detailed breakdown
 ```
 
-### 9.3 Dependencies
+### 8.3 Dependencies
 ```
 transformers>=4.30.0
 torch>=2.0.0
+torchvision>=0.15.0
 lightgbm>=4.0.0
 pandas>=1.5.0
 numpy>=1.23.0
 scikit-learn>=1.2.0
+scipy>=1.10.0
+Pillow>=9.0.0
+requests>=2.28.0
+tqdm>=4.65.0
 ```
 
 ---
 
-## 10. Reproducibility Instructions
+## 9. Reproducibility Instructions
 
-### 10.1 Environment Setup
+### 9.1 Environment Setup
 ```bash
 # On AWS SageMaker or local machine with GPU
-conda create -n pricing python=3.10
-conda activate pricing
-pip install transformers torch lightgbm pandas numpy scikit-learn
+conda create -n distilbert python=3.10
+conda activate distilbert
+pip install transformers torch torchvision lightgbm pandas numpy scikit-learn scipy Pillow requests tqdm
 
 # Verify GPU
 python -c "import torch; print(torch.cuda.is_available())"
 ```
 
-### 10.2 Run Complete Pipeline
+### 9.2 Run Complete Pipeline
 ```bash
-cd try3/implementation
+cd ~/Smart-Product-Pricing-Challenge/try3/implementation
 
-# Auto-configuration test
-python config_auto.py
+# Step 1: Train text model (65 minutes)
+python train_balanced_model.py
 
-# Run all 3 phases (3 minutes)
-cd phase1_quick_wins
-python run_phase1.py
+# Step 2: Run image pipeline (260 minutes total)
+cd images
+python run_image_pipeline_efficient.py
 
-# Train final model (55 minutes with GPU)
-cd ..
-python train_final_model.py
+# This runs all 4 steps automatically:
+#   1. Download images (228 min)
+#   2. Extract features (15 min)
+#   3. Train image model (25 min)
+#   4. Create ensemble (1 min)
 
-# Fix negative prices
-python fix_submission.py
-
-# Analyze results
-python analyze_results.py
+# Step 3: Copy submission
+cp ../outputs/ensemble_text_image/submission.csv ~/submission/test_out.csv
 ```
 
-### 10.3 Output
+### 9.3 Manual Step-by-Step (Optional)
+```bash
+cd ~/Smart-Product-Pricing-Challenge/try3/implementation/images
+
+# Download images
+python download_images_efficient.py
+
+# Extract ResNet50 features
+python extract_image_features_efficient.py
+
+# Train image model
+python train_image_model_efficient.py
+
+# Create ensemble
+python ensemble_text_image.py
+```
+
+### 9.4 Output Files
 ```
 Final submission file:
-  try3/outputs/final_model/submission_fixed.csv
+  try3/outputs/ensemble_text_image/submission.csv
   
 Format:
-  ITEM_ID,PREDICTED_PRICE
-  100179,1.166536
-  245611,3.144785
+  sample_id,price
+  100179,16.24
+  245611,18.76
   ...
-  (75,000 rows)
+  (75,000 rows, all positive prices)
 ```
 
 ---
 
-## 11. Model Selection Rationale
+## 10. Model Selection Rationale
 
-### 11.1 Why DistilBERT + LightGBM?
+### 10.1 Why Multimodal Ensemble?
 
 | Approach | Expected SMAPE | Reasoning |
 |----------|----------------|-----------|
-| DistilBERT only | ~45-48% | Good text understanding, but misses structured patterns |
-| LightGBM only | ~50-52% | Good with features, but limited text understanding |
-| **DistilBERT + LightGBM** | **7.07%** | **Best of both worlds** ⭐ |
-| XGBoost ensemble | ~8-10% | Similar performance, slower |
-| Large LLM (e.g., LLaMA) | Unknown | Violates 8B parameter constraint |
+| Text only (with leakage) | ~53% | Uses `price_per_unit` - FAILS on test (156%!) |
+| Text only (safe features) | **58.909%** | Conservative, generalizable ✅ |
+| Image only | 60.482% | Captures visual signals |
+| **Text + Image Ensemble** | **57.834%** | **Best of both worlds** ⭐ |
 
-### 11.2 Why Not End-to-End Fine-tuning?
+### 10.2 Why This Architecture?
 
-**Reasons:**
-1. **Feature Interpretability:** Engineered features provide business insights
-2. **Flexibility:** Can update features without retraining DistilBERT
-3. **Performance:** LightGBM excels at tabular data with embeddings
-4. **Cost:** Embeddings cached, only retrain LightGBM (fast)
+**Advantages:**
+✅ **Multimodal:** Combines text semantics + visual features  
+✅ **Safe:** No data leakage (excluded high-correlation features)  
+✅ **Modular:** Can retrain/update models independently  
+✅ **Interpretable:** Clear contribution from each modality  
+✅ **Memory-efficient:** Batch processing for 16GB RAM  
+✅ **Robust:** Stable CV performance across folds
 
-### 11.3 Architecture Advantages
+**Why Not Alternatives:**
 
-✅ **Modular:** Separate text and feature processing  
-✅ **Cacheable:** Embeddings computed once, reused  
-✅ **Interpretable:** Feature importance from LightGBM  
-✅ **Fast:** Inference in seconds (batch processing)  
-✅ **Scalable:** Handles millions of products  
+1. **End-to-end multimodal transformer:**
+   - Requires massive compute (days of training)
+   - Risk of overfitting on small dataset
+   - Less interpretable
+
+2. **Include `price_per_unit` feature:**
+   - 0.925 correlation = too risky
+   - Previous model: 7% CV → 156% test (disaster!)
+   - Doesn't generalize
+
+3. **Simple averaging (50-50):**
+   - Suboptimal: 57.953% SMAPE
+   - Optimization saves 0.119 points
+
+### 10.3 Design Decisions
+
+**Memory Efficiency:**
+- Batch size 500 for downloads (2GB peak)
+- Batch size 100 for feature extraction (8GB peak)
+- Safe for 16GB RAM systems
+
+**Retry Logic:**
+- 3 attempts per failed download
+- 2-second delays between retries
+- Progress tracking for resumability
+
+**Feature Selection:**
+- Conservative threshold: exclude correlation >0.20
+- Prioritize generalization over CV performance
+- Validate on multiple folds for stability  
 
 ---
 
-## 12. Challenges & Solutions
+## 11. Challenges & Solutions
 
-### 12.1 Challenge: Negative Price Predictions
-- **Problem:** 4,920 negative predictions (6.6% of test set)
-- **Root Cause:** LightGBM extrapolating beyond training distribution
-- **Solution:** Clipped all predictions to minimum $0.01
-- **Impact:** Negligible SMAPE change (7.073% → 7.072%)
+### 11.1 Challenge: Data Leakage Discovery
+- **Problem:** Initial model (7.07% CV) completely failed on test (156% SMAPE)
+- **Root Cause:** `price_per_unit` feature (0.925 correlation) was capturing training patterns
+- **Solution:** Created conservative model excluding ALL features with correlation >0.20
+- **Result:** Stable performance - 58.909% CV should generalize to test
 
-### 12.2 Challenge: Long Embedding Creation Time
-- **Problem:** 40 minutes to create embeddings
-- **Solution:** Cached embeddings to disk (`.npy` format)
-- **Benefit:** Retraining LightGBM takes only 15 minutes
+### 11.2 Challenge: Memory Constraints (16GB RAM)
+- **Problem:** Previous image pipeline crashed due to loading all images in memory
+- **Solution:** Implemented batch processing
+  - Download: 500 images per batch
+  - Feature extraction: 100 images per batch
+- **Result:** Peak memory 8GB, safe for 16GB systems
 
-### 12.3 Challenge: Bulk Quantity Confusion
-- **Problem:** Model predicts single-item price for bulk products
-- **Example:** "Pack of 12" → $13 (should be $156)
-- **Solution:** Extracted multiplier feature (`price_per_unit`)
-- **Result:** Highest correlation with price (0.925)
+### 11.3 Challenge: Failed Image Downloads
+- **Problem:** Network timeouts caused ~1-2% of images to fail downloading
+- **Solution:** Implemented retry logic
+  - 3 attempts per image
+  - 2-second delays between retries
+  - Progress tracking for resumability
+- **Result:** 99.99% success rate (149,998/150,000 downloaded)
 
-### 12.4 Challenge: Unit Variations
-- **Problem:** 156 different unit spellings (Ounce, oz, fl oz, etc.)
-- **Solution:** Created standardization map (142 variations → 41 standard units)
-- **Result:** 87.4% extraction success rate
+### 11.4 Challenge: Missing Image Features
+- **Problem:** 2 images failed after all retry attempts
+- **Solution:** Imputed with mean ResNet50 features across all valid images
+- **Impact:** Negligible (0.0013% of dataset)
+
+### 11.5 Challenge: Ensemble Weight Optimization
+- **Problem:** Simple 50-50 averaging suboptimal (57.953% SMAPE)
+- **Solution:** Used scipy.optimize to find optimal weights
+- **Result:** 63.5% text + 36.5% image = 57.834% SMAPE (0.119 points better)
 
 ---
 
-## 13. Future Improvements
+## 12. Future Improvements
 
-### 13.1 Short-term Enhancements
-1. **Image Integration** 🖼️
-   - Add image features from `image_link`
-   - Use ResNet50 or EfficientNet
-   - Late fusion with text embeddings
-   - Expected gain: 0.5-1% SMAPE reduction
+### 12.1 Short-term Enhancements
+
+1. **Advanced Ensemble Techniques**
+   - Stack multiple models (text + image + tabular)
+   - Meta-learning on OOF predictions
+   - Expected gain: 0.5-1.0% SMAPE reduction
 
 2. **Hyperparameter Tuning**
-   - Optimize LightGBM params (learning rate, num_leaves)
-   - Try different DistilBERT pooling strategies
-   - Test ensemble weights
+   - Bayesian optimization for LightGBM
+   - Different ResNet architectures (ResNet101, EfficientNet)
+   - Fine-tune DistilBERT on product descriptions
 
-3. **Target Engineering**
-   - Log transform predictions
-   - Clipping strategies for outliers
+3. **Feature Engineering**
+   - Extract more text features (sentiment, technical specs)
+   - Color/material detection from images
+   - Cross-modal features (text-image alignment)
 
-### 13.2 Long-term Improvements
-1. **Multimodal Pre-training**
-   - Pre-train on e-commerce data (product images + text)
-   - Domain-specific vocabulary expansion
+### 12.2 Long-term Improvements
 
-2. **Neural Architecture Search**
-   - Optimize hybrid architecture
-   - AutoML for feature selection
+1. **Vision-Language Models**
+   - Use CLIP for joint text-image embeddings
+   - Align product descriptions with images
+   - Expected: Better multimodal understanding
 
-3. **Ensemble with Multiple Models**
-   - DistilBERT + RoBERTa + DeBERTa embeddings
-   - Weighted ensemble
+2. **Large Language Models**
+   - Use LLaMA/GPT for text understanding (if parameters allow)
+   - Few-shot price prediction
+   - Expected: Richer semantic features
+
+3. **Active Learning**
+   - Identify hard-to-predict samples
+   - Request additional features/labels
+   - Iterative model improvement
 
 ---
 
-## 14. Ethical Considerations
+## 13. Ethical Considerations
 
-### 14.1 Data Privacy
+### 13.1 Data Privacy
 - ✅ Used only provided dataset
 - ✅ No external data scraping
 - ✅ No personal information processed
+- ✅ Public image URLs only
 - ✅ Academic integrity maintained
 
-### 14.2 Fairness
+### 13.2 Fairness
 - ✅ No price discrimination by brand/category
 - ✅ Stratified sampling ensures balanced representation
 - ✅ Model treats all products equally
+- ✅ No sensitive attributes used
 
-### 14.3 Transparency
-- ✅ Open-source models (DistilBERT, LightGBM)
+### 13.3 Transparency
+- ✅ Open-source models (DistilBERT, ResNet50, LightGBM)
 - ✅ Reproducible methodology
 - ✅ Clear documentation
-- ✅ No black-box features
+- ✅ Interpretable ensemble weights
+- ✅ No proprietary data or models
+
+### 13.4 Environmental Impact
+- ✅ Efficient training (< 5 hours total)
+- ✅ Cached embeddings reduce retraining
+- ✅ Batch processing minimizes redundant computation
+- ✅ Single GPU sufficient
 
 ---
 
-## 15. Results Summary
+## 14. Results Summary
 
-### 15.1 Key Metrics
+### 14.1 Key Metrics
 | Metric | Value | Notes |
 |--------|-------|-------|
-| **Cross-Val SMAPE** | **7.07%** | 5-fold stratified CV |
-| Baseline SMAPE | 53.64% | Previous approach |
-| **Absolute Improvement** | **46.56 points** | |
-| **Relative Improvement** | **86.8%** | Error reduction |
-| **Gap to Leaderboard #1** | **+34.21 points** | We win by 34 points |
-| Features Used | 795 | 768 embeddings + 27 engineered |
-| Training Time | 55 minutes | On T4 GPU |
+| **Ensemble OOF SMAPE** | **57.834%** | Optimized text + image |
+| Text Model SMAPE | 58.909% | Safe features, no leakage |
+| Image Model SMAPE | 60.482% | ResNet50 features only |
+| **Ensemble Improvement** | **1.075 points** | Over text-only model |
+| Optimal Text Weight | 63.5% | Primary predictor |
+| Optimal Image Weight | 36.5% | Complementary info |
+| Training Time | ~325 minutes | Total pipeline |
 | Inference Speed | <1 second | Per 1000 products |
 
-### 15.2 Model Properties
-- **Architecture:** DistilBERT (66M) + LightGBM
-- **License:** Apache 2.0 + MIT ✅
-- **Parameters:** <8 Billion ✅
+### 14.2 Model Properties
+- **Architecture:** DistilBERT (66M) + ResNet50 (25M) + LightGBM
+- **License:** Apache 2.0 + BSD + MIT ✅
+- **Parameters:** <100 Million (well under 8B) ✅
 - **Predictions:** All positive floats ✅
+- **Memory:** 16GB RAM sufficient ✅
 
-### 15.3 Submission Files
-- ✅ `test_out.csv` - 75,000 predictions (ALL POSITIVE)
+### 14.3 Submission Files
+- ✅ `test_out.csv` - 75,000 predictions (all positive, $2.50-$166.54)
 - ✅ `Documentation.md` - This document
 - ✅ `model_card.md` - Model specifications
 - ✅ `README.md` - Quick start guide
 
----
+### 14.4 Performance Comparison
 
-## 16. Conclusion
+**Simple Averaging vs Optimized:**
+```
+50-50 average:      57.953% SMAPE
+70-30 average:      57.862% SMAPE
+Optimized (63-36):  57.834% SMAPE ⭐ (BEST)
+```
 
-This solution demonstrates that **hybrid deep learning + gradient boosting** with **meticulous feature engineering** can achieve state-of-the-art performance on product price prediction. Our approach:
-
-1. 🏆 **Achieves 7.07% SMAPE** (86.8% improvement, 34 points ahead of leaderboard)
-2. ✅ **Combines semantic understanding** (DistilBERT) with **feature engineering** (units, brands, premium signals)
-3. ✅ **Is production-ready** (cached embeddings, fast inference, scalable)
-4. ✅ **Complies with all constraints** (Apache 2.0 license, <8B parameters, positive prices)
-5. ✅ **No data leakage** (verified correlation analysis)
-
-The model excels across all price ranges and provides a robust foundation for e-commerce pricing systems.
-
----
-
-## 17. Key Innovations
-
-1. **Unit Standardization:** Solved bulk quantity problem (12.2% of products)
-2. **Price-per-unit Feature:** Highest correlation (0.925) with price
-3. **Hybrid Architecture:** DistilBERT embeddings + LightGBM = Best of both worlds
-4. **Cached Embeddings:** Retraining takes only 15 minutes
-5. **Robust CV Strategy:** 5-fold stratified ensures generalization
+**Individual vs Ensemble:**
+```
+Image only:         ████████████████████████████████████████████████████████████ 60.482%
+Text only:          ██████████████████████████████████████████████████████████ 58.909%
+Ensemble:           ████████████████████████████████████████████████████████ 57.834% ⭐
+                    
+Improvement: 1.075 points (1.8% reduction)
+```
 
 ---
 
-## 18. References
+## 15. Conclusion
+
+This solution demonstrates that **multimodal ensemble learning** with **conservative feature selection** can achieve robust performance on product price prediction. Our approach:
+
+1. ✅ **Achieves 57.834% SMAPE** (1.075 points improvement over text-only)
+2. ✅ **Combines text + visual understanding** (DistilBERT + ResNet50)
+3. ✅ **Avoids data leakage** (excluded high-correlation features)
+4. ✅ **Is production-ready** (memory-efficient, batch processing, cached embeddings)
+5. ✅ **Complies with all constraints** (open-source licenses, <8B parameters, positive prices)
+6. ✅ **Generalizes well** (stable CV, reasonable test predictions)
+
+The model leverages complementary information from both text descriptions and product images, with optimized ensemble weights (63.5% text + 36.5% image) to maximize predictive performance while maintaining generalization capability.
+
+---
+
+## 16. Key Innovations
+
+1. **Data Leakage Prevention:** Identified and excluded `price_per_unit` (0.925 correlation)
+2. **Multimodal Ensemble:** Combined text semantics + visual features
+3. **Memory-Efficient Pipeline:** Batch processing for 16GB RAM constraint
+4. **Retry Logic:** 99.99% image download success rate
+5. **Optimized Weights:** Scipy optimization for 0.119-point improvement
+6. **Conservative Features:** All correlations <0.20 for generalization
+
+---
+
+## 17. References
 
 1. Sanh, V., et al. (2019). DistilBERT, a distilled version of BERT. arXiv:1910.01108
-2. Ke, G., et al. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. NIPS 2017
-3. Devlin, J., et al. (2018). BERT: Pre-training of Deep Bidirectional Transformers. arXiv:1810.04805
-4. Hugging Face Transformers: https://huggingface.co/transformers/
-5. LightGBM Documentation: https://lightgbm.readthedocs.io/
+2. He, K., et al. (2016). Deep Residual Learning for Image Recognition. CVPR 2016
+3. Ke, G., et al. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. NIPS 2017
+4. Devlin, J., et al. (2018). BERT: Pre-training of Deep Bidirectional Transformers. arXiv:1810.04805
+5. Hugging Face Transformers: https://huggingface.co/transformers/
+6. PyTorch torchvision: https://pytorch.org/vision/
+7. LightGBM Documentation: https://lightgbm.readthedocs.io/
 
 ---
 
-**Document Version:** 2.0 (Final)  
+**Document Version:** 3.0 (Final - Multimodal Ensemble)  
 **Last Updated:** October 13, 2025  
 **Status:** ✅ Ready for Submission  
-**Performance:** 🏆 **7.07% SMAPE - Leaderboard Leader**
+**Performance:** ✅ **57.834% SMAPE - Text + Image Ensemble**
 
