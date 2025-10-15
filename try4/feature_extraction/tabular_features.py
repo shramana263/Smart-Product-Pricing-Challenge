@@ -246,9 +246,10 @@ def safe_target_encode(train_df, test_df, categorical_features, target_col='pric
             
             encoding_map = stats['encoding'].to_dict()
             
-            # Apply to validation fold
-            train_encoded.loc[val_idx, f'{col}_target_enc'] = \
-                train_df.iloc[val_idx][col].map(encoding_map).fillna(global_mean)
+            # Apply to validation fold (safe float conversion to avoid categorical issues)
+            train_encoded.loc[val_idx, f'{col}_target_enc'] = (
+                train_df.iloc[val_idx][col].map(encoding_map).astype('float32').fillna(global_mean)
+            )
         
         # For test: use full training set
         stats = pd.DataFrame({
@@ -262,8 +263,11 @@ def safe_target_encode(train_df, test_df, categorical_features, target_col='pric
         )
         
         encoding_map = stats['encoding'].to_dict()
-        test_encoded[f'{col}_target_enc'] = \
-            test_df[col].map(encoding_map).fillna(global_mean)
+        
+        # Apply to test set (safe float conversion)
+        test_encoded[f'{col}_target_enc'] = (
+            test_df[col].map(encoding_map).astype('float32').fillna(global_mean)
+        )
     
     return train_encoded, test_encoded
 

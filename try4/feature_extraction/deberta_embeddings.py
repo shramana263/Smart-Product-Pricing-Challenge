@@ -77,9 +77,15 @@ class ProductTextDataset(Dataset):
 class DeBERTaRegressor(nn.Module):
     """DeBERTa with regression head for price prediction"""
     
-    def __init__(self, model_name, dropout=0.1):
+    def __init__(self, model_name, dropout=0.1, enable_multi_gpu=True):
         super().__init__()
         self.deberta = AutoModel.from_pretrained(model_name)
+        
+        # ⚡ Enable multi-GPU if available
+        if enable_multi_gpu and torch.cuda.device_count() > 1:
+            print(f"🚀 Using {torch.cuda.device_count()} GPUs with DataParallel!")
+            self.deberta = nn.DataParallel(self.deberta)
+        
         self.dropout = nn.Dropout(dropout)
         self.regressor = nn.Sequential(
             nn.Linear(1024, 512),
