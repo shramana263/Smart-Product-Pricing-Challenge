@@ -35,7 +35,7 @@ echo ""
 echo "Step 2: Creating symlink to existing images..."
 mkdir -p outputs
 
-TARGET="../../try3/outputs/images_efficient"
+TARGET="../try3/outputs/images_efficient"
 LINK="outputs/images"
 
 if [ ! -d "$TARGET" ]; then
