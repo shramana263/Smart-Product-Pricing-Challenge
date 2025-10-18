@@ -36,6 +36,9 @@ from config.config import (
     TEXT_MODEL, DEVICE, USE_FP16, RANDOM_SEED, CV_CONFIG
 )
 
+NUM_AVAILABLE_GPUS = max(1, torch.cuda.device_count())
+PIN_MEMORY = DEVICE.startswith('cuda')
+
 print("="*80)
 print("🔤 DeBERTa-v3-large Embedding Extraction")
 print("="*80)
@@ -234,6 +237,16 @@ def main():
     
     print(f"✓ Train: {len(train_df):,} samples")
     print(f"✓ Test:  {len(test_df):,} samples")
+    print(f"✓ GPUs detected: {NUM_AVAILABLE_GPUS}")
+
+    per_device_batch = TEXT_MODEL['batch_size']
+    scale_batch = TEXT_MODEL.get('scale_batch_by_gpu', True)
+    train_batch_size = max(1, per_device_batch * NUM_AVAILABLE_GPUS) if scale_batch else per_device_batch
+    eval_batch_size = max(1, int(train_batch_size * TEXT_MODEL.get('eval_batch_multiplier', 2)))
+    dataloader_workers = max(2, TEXT_MODEL.get('num_workers', 2))
+    print(f"✓ Effective train batch size: {train_batch_size}")
+    print(f"✓ Effective eval batch size:  {eval_batch_size}")
+    print(f"✓ DataLoader workers:        {dataloader_workers}")
     
     # Clean text
     train_df['catalog_content'] = train_df['catalog_content'].fillna('').astype(str)
@@ -288,18 +301,20 @@ def main():
         # Dataloaders
         train_loader = DataLoader(
             train_dataset,
-            batch_size=TEXT_MODEL['batch_size'],
+            batch_size=train_batch_size,
             shuffle=True,
-            num_workers=2,
-            pin_memory=True
+            num_workers=dataloader_workers,
+            pin_memory=PIN_MEMORY,
+            drop_last=False
         )
         
         val_loader = DataLoader(
             val_dataset,
-            batch_size=TEXT_MODEL['batch_size'] * 2,
+            batch_size=eval_batch_size,
             shuffle=False,
-            num_workers=2,
-            pin_memory=True
+            num_workers=dataloader_workers,
+            pin_memory=PIN_MEMORY,
+            drop_last=False
         )
         
         # Model
@@ -373,9 +388,11 @@ def main():
         )
         full_train_loader = DataLoader(
             full_train_dataset,
-            batch_size=TEXT_MODEL['batch_size'] * 2,
+            batch_size=eval_batch_size,
             shuffle=False,
-            num_workers=2
+            num_workers=dataloader_workers,
+            pin_memory=PIN_MEMORY,
+            drop_last=False
         )
         
         train_emb = extract_embeddings(model, full_train_loader, DEVICE)
@@ -405,9 +422,11 @@ def main():
     )
     test_loader = DataLoader(
         test_dataset,
-        batch_size=TEXT_MODEL['batch_size'] * 2,
+        batch_size=eval_batch_size,
         shuffle=False,
-        num_workers=2
+        num_workers=dataloader_workers,
+        pin_memory=PIN_MEMORY,
+        drop_last=False
     )
     
     test_embeddings_list = []

@@ -21,9 +21,10 @@ MODELS_DIR = OUTPUT_DIR / "models"
 PREDICTIONS_DIR = OUTPUT_DIR / "predictions"
 FEATURES_DIR = OUTPUT_DIR / "features"
 ANALYSIS_DIR = OUTPUT_DIR / "analysis"
+IMAGE_CACHE_DIR = OUTPUT_DIR / "images"
 
 # Create directories
-for dir_path in [EMBEDDINGS_DIR, MODELS_DIR, PREDICTIONS_DIR, FEATURES_DIR, ANALYSIS_DIR]:
+for dir_path in [EMBEDDINGS_DIR, MODELS_DIR, PREDICTIONS_DIR, FEATURES_DIR, ANALYSIS_DIR, IMAGE_CACHE_DIR]:
     dir_path.mkdir(parents=True, exist_ok=True)
 
 # ============================================================================
@@ -35,21 +36,28 @@ TEXT_MODEL = {
     'name': 'microsoft/deberta-v3-large',
     'max_length': 256,
     'embedding_dim': 1024,
-    'batch_size': 16,  # Smaller due to large model
+    'batch_size': 24,  # Per-GPU batch size (scaled by number of GPUs at runtime)
     'learning_rate': 1e-5,
     'num_epochs': 3,
     'warmup_ratio': 0.1,
     'weight_decay': 0.01,
+    'num_workers': 24,
+    'scale_batch_by_gpu': True,
+    'eval_batch_multiplier': 2,
 }
 
 # Image Model - CLIP ViT-Large
 IMAGE_MODEL = {
     'name': 'openai/clip-vit-large-patch14',
     'embedding_dim': 768,
-    'batch_size': 32,
+    'batch_size': 64,  # Per-GPU batch size (scaled by number of GPUs at runtime)
     'image_size': 224,
     'download_timeout': 10,
     'max_retries': 3,
+    'num_workers': 16,
+    'scale_batch_by_gpu': True,
+    'use_local_images': True,
+    'local_image_dir': IMAGE_CACHE_DIR,
 }
 
 # Engineered Features
