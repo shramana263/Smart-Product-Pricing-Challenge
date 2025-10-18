@@ -185,6 +185,7 @@ def extract_price_features(df):
         bins=[0, 10, 20, 50, 100, np.inf],
         labels=['budget', 'economy', 'mid', 'premium', 'luxury']
     )
+    df['price_bin'] = df['price_bin'].astype(str)
     
     print(f"  ✓ Created {5} price-related features")
     
@@ -218,7 +219,7 @@ def safe_target_encode(train_df, test_df, categorical_features, target_col='pric
     print(f"  Folds:       {n_folds}")
     
     for col in categorical_features:
-        if col not in train_df.columns:
+        if col not in train_df.columns or col not in test_df.columns:
             continue
         
         print(f"  Encoding: {col}")
@@ -265,9 +266,8 @@ def safe_target_encode(train_df, test_df, categorical_features, target_col='pric
         encoding_map = stats['encoding'].to_dict()
         
         # Apply to test set (safe float conversion)
-        test_encoded[f'{col}_target_enc'] = (
-            test_df[col].map(encoding_map).astype('float32').fillna(global_mean)
-        )
+        mapped = test_df[col].map(encoding_map)
+        test_encoded[f'{col}_target_enc'] = mapped.astype('float32').fillna(global_mean)
     
     return train_encoded, test_encoded
 
@@ -305,6 +305,26 @@ def main():
         
         if 'price' in df.columns:
             df = extract_price_features(df)
+
+    # Ensure price-based features exist for test data lacking ground-truth prices
+    price_defaults = {
+        'price_log': np.nan,
+        'price_sqrt': np.nan,
+        'price_squared': np.nan,
+        'price_per_unit': np.nan,
+    }
+
+    for col, default in price_defaults.items():
+        if col not in test_df.columns:
+            test_df[col] = default
+
+    if 'price_bin' not in test_df.columns:
+        test_df['price_bin'] = 'unknown'
+    else:
+        test_df['price_bin'] = test_df['price_bin'].fillna('unknown').astype(str)
+
+    if 'price_bin' in train_df.columns:
+        train_df['price_bin'] = train_df['price_bin'].astype(str)
     
     # Target encoding (only for categorical features with manageable cardinality)
     categorical_features = ['brand', 'category', 'unit', 'price_bin']

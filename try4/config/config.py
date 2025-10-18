@@ -36,14 +36,14 @@ TEXT_MODEL = {
     'name': 'microsoft/deberta-v3-large',
     'max_length': 256,
     'embedding_dim': 1024,
-    'batch_size': 24,  # Per-GPU batch size (scaled by number of GPUs at runtime)
+    'batch_size': 16,  # Per-GPU batch size (scaled by number of GPUs at runtime)
     'learning_rate': 1e-5,
     'num_epochs': 3,
     'warmup_ratio': 0.1,
     'weight_decay': 0.01,
-    'num_workers': 24,
+    'num_workers': 16,
     'scale_batch_by_gpu': True,
-    'eval_batch_multiplier': 2,
+    'eval_batch_multiplier': 1,
 }
 
 # Image Model - CLIP ViT-Large

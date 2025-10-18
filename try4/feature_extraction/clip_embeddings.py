@@ -38,6 +38,13 @@ NUM_AVAILABLE_GPUS = max(1, torch.cuda.device_count())
 PIN_MEMORY = DEVICE.startswith('cuda')
 SUPPORTED_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.webp', '.bmp')
 
+CLIP_NAME_MAPPING = {
+    'openai/clip-vit-base-patch32': 'ViT-B/32',
+    'openai/clip-vit-base-patch16': 'ViT-B/16',
+    'openai/clip-vit-large-patch14': 'ViT-L/14',
+    'openai/clip-vit-large-patch14-336': 'ViT-L/14@336px',
+}
+
 print("="*80)
 print("🖼️ CLIP ViT-Large Image Embedding Extraction")
 print("="*80)
@@ -103,8 +110,13 @@ class CLIPFeatureExtractor:
 
     def __init__(self, model_name='ViT-L/14', device='cuda'):
         self.device = device
-        print(f"\n🔄 Loading CLIP {model_name}...")
-        self.clip_model, self.preprocess = clip.load(model_name, device=device)
+        resolved_name = CLIP_NAME_MAPPING.get(model_name, model_name)
+        if resolved_name != model_name:
+            print(f"\n🔄 Loading CLIP {resolved_name} (mapped from {model_name})...")
+        else:
+            print(f"\n🔄 Loading CLIP {model_name}...")
+
+        self.clip_model, self.preprocess = clip.load(resolved_name, device=device)
         self.clip_model.eval()
 
         self.encoder = ClipImageEncoder(self.clip_model)
