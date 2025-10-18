@@ -35,11 +35,28 @@ echo ""
 echo "Step 2: Creating symlink to existing images..."
 mkdir -p outputs
 
-TARGET="../try3/outputs/images_efficient"
+TARGET_REL="../try3/outputs/images_efficient"
 LINK="outputs/images"
 
-if [ ! -d "$TARGET" ]; then
-    echo "❌ Expected image cache not found at $TARGET"
+if [ ! -d "$TARGET_REL" ]; then
+    echo "❌ Expected image cache not found at $TARGET_REL"
+    exit 1
+fi
+
+# Resolve absolute path to avoid nested symlink issues
+TARGET_ABS=$(python - "$TARGET_REL" <<'PY'
+import os
+import sys
+
+if len(sys.argv) < 2:
+    sys.exit(1)
+
+print(os.path.realpath(sys.argv[1]))
+PY
+)
+
+if [ -z "$TARGET_ABS" ]; then
+    echo "❌ Could not resolve absolute path for $TARGET_REL"
     exit 1
 fi
 
@@ -48,13 +65,13 @@ if [ -L "$LINK" ] || [ -d "$LINK" ]; then
     echo "   Removed existing outputs/images"
 fi
 
-ln -s "$TARGET" "$LINK"
-echo "✅ Symlink created: $LINK -> $TARGET"
+ln -s "$TARGET_ABS" "$LINK"
+echo "✅ Symlink created: $LINK -> $TARGET_ABS"
 
 if [ -d "$LINK/train" ] && [ -d "$LINK/test" ]; then
     echo "✅ Symlink verified - train/ and test/ folders accessible"
 else
-    echo "⚠️  Warning: train/ or test/ not found under $LINK"
+    echo "⚠️  Warning: train/ or test/ not found under $LINK (check if cache mounted locally)"
 fi
 
 echo ""
